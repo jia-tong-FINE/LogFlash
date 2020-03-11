@@ -1,6 +1,6 @@
 package modelconstruction;
 
-import FaultDiagnosis.FaultDiagnosisUnitMode1;
+import faultdiagnosis.FaultDiagnosisUnitMode1;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.java.tuple.Tuple7;

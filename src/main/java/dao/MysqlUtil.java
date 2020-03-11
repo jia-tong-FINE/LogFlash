@@ -1,6 +1,6 @@
 package dao;
 
-import FaultDiagnosis.Anomaly;
+import faultdiagnosis.Anomaly;
 import org.apache.flink.api.java.tuple.Tuple7;
 
 import java.sql.*;

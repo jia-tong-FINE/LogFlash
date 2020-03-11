@@ -1,8 +1,8 @@
-import Dao.MysqlUtil;
-import TCFGConstruction.TCFGConstructerMode1;
-import TCFGConstruction.TCFGConstructerMode2;
-import TCFGConstruction.TCFGConstructerMode3;
-import TemplateMining.FlinkDrain;
+import dao.MysqlUtil;
+import modelconstruction.TCFGConstructerMode1;
+import modelconstruction.TCFGConstructerMode2;
+import modelconstruction.TCFGConstructerMode3;
+import templatemining.FlinkDrain;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.utils.ParameterTool;
@@ -42,8 +42,6 @@ public class WorkFlow {
                 log.error("workFlowMode can only be 1 or 2");
                 break;
             case "1":
-                Plaint plaint = new Plaint();
-                plaint.createGuiAndShow();
                 String logdata = "adc";
                 String logName = "adc-06-04-2019-2";
                 //String logName = "yarn-resourcemanager-cleaned";

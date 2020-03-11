@@ -1,7 +1,7 @@
 package modelconstruction;
 
-import FaultDiagnosis.Anomaly;
-import FaultDiagnosis.FaultDiagnosisUnitMode2;
+import faultdiagnosis.Anomaly;
+import faultdiagnosis.FaultDiagnosisUnitMode2;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.common.typeinfo.TypeHint;

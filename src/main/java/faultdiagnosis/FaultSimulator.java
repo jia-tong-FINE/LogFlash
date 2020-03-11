@@ -1,7 +1,7 @@
 package faultdiagnosis;
 
-import Dao.MysqlUtil;
-import TemplateMining.LogParser;
+import dao.MysqlUtil;
+import templatemining.LogParser;
 
 import java.io.BufferedReader;
 import java.io.File;

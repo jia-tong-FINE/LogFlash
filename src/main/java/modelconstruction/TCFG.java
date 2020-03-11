@@ -1,6 +1,6 @@
 package modelconstruction;
 
-import FaultDiagnosis.FaultDiagnosisUtil;
+import faultdiagnosis.FaultDiagnosisUtil;
 
 import java.util.ArrayList;
 import java.util.List;

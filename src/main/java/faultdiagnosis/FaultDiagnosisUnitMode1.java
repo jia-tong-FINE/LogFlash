@@ -1,6 +1,6 @@
 package faultdiagnosis;
 
-import TCFGConstruction.TCFGUtil;
+import modelconstruction.TCFGUtil;
 import org.apache.flink.api.java.tuple.Tuple7;
 
 import java.util.ArrayList;
