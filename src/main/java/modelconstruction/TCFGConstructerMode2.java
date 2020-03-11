@@ -1,5 +1,6 @@
 package modelconstruction;
 
+import TCFGmodel.TCFG;
 import faultdiagnosis.Anomaly;
 import faultdiagnosis.FaultDiagnosisUnitMode2;
 import org.apache.flink.api.common.state.ValueState;
@@ -125,8 +126,8 @@ public class TCFGConstructerMode2 implements TCFGConstructer{
 //                        MysqlUtil mysqlUtil = new MysqlUtil();
 //                        mysqlUtil.insertAnomaly(anomaly);
                         for (int i = 0; i< tcfg.getEdges().size(); i++) {
-                            String inNode = tcfg.getEdges().get(i).getIn_node().node_id;
-                            String outNode = tcfg.getEdges().get(i).getOut_node().node_id;
+                            String inNode = tcfg.getEdges().get(i).getIn_node().getNode_id();
+                            String outNode = tcfg.getEdges().get(i).getOut_node().getNode_id();
                             if (anomaly.getAnomalyLog().f6.equals(inNode)) {
                                 System.out.println("inNode:" + inNode + " outNode: " + outNode);
                             }

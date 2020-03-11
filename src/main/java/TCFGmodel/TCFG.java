@@ -1,6 +1,7 @@
-package modelconstruction;
+package TCFGmodel;
 
 import faultdiagnosis.FaultDiagnosisUtil;
+import modelconstruction.TransferParamMatrix;
 
 import java.util.ArrayList;
 import java.util.List;

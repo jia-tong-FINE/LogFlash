@@ -67,8 +67,7 @@ public class WorkFlow {
                 env.execute();
                 break;
             case "2":
-//                Plaint plaint2 = new Plaint();
-//                plaint2.createGuiAndShow();
+
                 String logdata2 = "adc";
                 String logName2 = "adc-06-04-2019-2";
                 String input_dir2 = String.format("src/main/resources/data/%s/raw", logdata2);
@@ -87,9 +86,7 @@ public class WorkFlow {
                         .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))),Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
                         //.window(TumblingProcessingTimeWindows.of(Time.seconds(5)))
                         .process(new TCFGConstructerMode2.TransferParamMatrixUpdate());
-                //.print();
-                //.writeAsCsv(output_dir + File.separator + logName + "_flink.csv", FileSystem.WriteMode.OVERWRITE);
-                //addsink
+
                 env2.execute();
                 break;
             case "3":
