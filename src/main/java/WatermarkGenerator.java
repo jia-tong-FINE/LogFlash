@@ -1,4 +1,5 @@
 import org.apache.flink.api.java.tuple.Tuple7;
+import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.functions.AssignerWithPeriodicWatermarks;
 import org.apache.flink.streaming.api.watermark.Watermark;
 
@@ -10,6 +11,7 @@ public class WatermarkGenerator {
     public static class BoundedOutOfOrdernessGenerator implements AssignerWithPeriodicWatermarks<Tuple7<String, String, String, String, String, String, String>> {
 
         Properties properties = WorkFlow.getConfig();
+
         private final long maxOutOfOrderness = Long.parseLong(properties.getProperty("maxOutOfOrderness")); // timeWindow milliseconds
         private long currentMaxTimestamp;
 

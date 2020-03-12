@@ -51,14 +51,14 @@ public class TCFGUtil {
         int count;
         int interval;
 
-        counter () {
+        public counter () {
             TCFGUtil tcfgUtil = new TCFGUtil();
             Properties properties = tcfgUtil.getConfig();
             this.count = 0;
             this.interval = Integer.valueOf(properties.getProperty("interval"));
         }
 
-        int modResult() {
+        public int modResult() {
             count ++;
             count = count%interval;
             return count;

@@ -2,6 +2,7 @@ package TCFGmodel;
 
 import faultdiagnosis.FaultDiagnosisUtil;
 import modelconstruction.TransferParamMatrix;
+import org.apache.flink.api.java.utils.ParameterTool;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,11 +23,6 @@ public class TCFG {
         edges = new ArrayList<>();
     }
 
-    TCFG(List<Node> nodes, List<Edge> edges) {
-
-        this.nodes = nodes;
-        this.edges = edges;
-    }
 
     public class Node {
         String node_id;
@@ -43,7 +39,6 @@ public class TCFG {
         Node in_node;
         Node out_node;
         long time_weight;
-        double alpha;
 
         public Node getIn_node() {
             return in_node;

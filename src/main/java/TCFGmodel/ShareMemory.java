@@ -8,6 +8,8 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.Properties;
+import org.apache.flink.api.java.utils.ParameterTool;
+
 
 
 
@@ -40,6 +42,7 @@ public class ShareMemory {
             this.sharePath = sp;
         }
         this.shareFileName = sf;
+
 
         try {
             // 获得一个只读的随机存取文件对象   "rw" 打开以便读取和写入。如果该文件尚不存在，则尝试创建该文件。
@@ -240,11 +243,13 @@ public class ShareMemory {
     }
 
     public static void main(String arsg[]) throws Exception{
-        ShareMemory sm = new ShareMemory("E://demo","test");
+        ParameterTool parameter = ParameterTool.fromPropertiesFile("src/main/resources/config.properties");
+        String sp = parameter.get("shareMemoryFilePath");
+        ShareMemory sm = new ShareMemory(sp,"test");
         String str = "中文测试";
-        sm.write(40, 20, str.getBytes("UTF-8"));
-        byte[] b = new byte[20];
-        sm.read(40, 20, b);
+        sm.write(0, 40, str.getBytes("UTF-8"));
+        byte[] b = new byte[40];
+        sm.read(0, 40, b);
         System.out.println(new String(b,"UTF-8"));
     }
 }
