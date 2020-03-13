@@ -279,4 +279,14 @@ public class TransferParamMatrix implements Serializable {
     public Map<String, Map<String, Long>> getTimeMatrix() {
         return timeMatrix;
     }
+
+    public double getNorm(){
+        Map<String, Map<String, Double>> matrix = getParamMatrix();
+        double t = 0;
+        for (Map.Entry<String, Map<String, Double>> entry : matrix.entrySet()) {
+            for (double value : entry.getValue().values())
+                t += Math.pow(value, 2);
+        }
+        return Math.sqrt(t);
+    }
 }

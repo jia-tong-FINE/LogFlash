@@ -1,36 +1,32 @@
 package templatemining;
 
 import joinery.DataFrame;
-import org.apache.flink.api.common.accumulators.DoubleCounter;
-import org.apache.flink.api.common.functions.RichFlatMapFunction;
+import org.apache.flink.api.common.accumulators.IntCounter;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
-import org.apache.flink.api.common.typeinfo.TypeHint;
-import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple7;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
 import org.apache.flink.util.Collector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.*;
 import java.util.*;
 
 public class FlinkDrain {
 
-    public static class Parse extends RichFlatMapFunction<Tuple2<String, String>, Tuple7<String, String, String, String, String, String, String>> {
+    public static class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, Tuple7<String, String, String, String, String, String, String>> {
         private ValueState<Node> parseTree;
-        private ValueState<Tuple2<Integer, Set<String>>> template;
-        private DoubleCounter templateTime = new DoubleCounter();
+        private IntCounter templateNum = new IntCounter();
         Logger log = LoggerFactory.getLogger(FlinkDrain.class);
 
         @Override
-        public void flatMap(Tuple2<String, String> input, Collector<Tuple7<String, String, String, String, String, String, String>> output) throws Exception {
+        public void processElement(Tuple2<String, String> input,
+                                   Context ctx,
+                                   Collector<Tuple7<String, String, String, String, String, String, String>> out) throws Exception {
             Node rootNode = parseTree.value();
-            Tuple2<Integer, Set<String>> currentTemplate = template.value() != null ? template.value() : Tuple2.of(0, new TreeSet<String>() {
-            });
             ParameterTool parameterTool = (ParameterTool) getRuntimeContext().getExecutionConfig().getGlobalJobParameters();
             if (rootNode == null) {
                 rootNode = new Node();
@@ -50,15 +46,15 @@ public class FlinkDrain {
                     "\\[[A-Za-z0-9\\-\\/]+\\]",
                     "\\{.+\\}",
                     "(\\d+\\.){3}\\d+",
-                    "(?<=[^A-Za-z0-9])(\\-?\\+?\\d+)(?=[^A-Za-z0-9])|[0-9]+$"};
+                    "(?<=[^A-Za-z0-9])(\\-?\\+?\\d+)(?=[^A-Za-z0-9])|[0-9]+$"
+            };
             int depth = 4;
             int maxChild = 100;
             double st = 0.5;
-            double start_time = System.currentTimeMillis();
             LogParser parser = new LogParser(regex, parameterTool.get("logFormat"), depth, maxChild, st);
             DataFrame<String> df_log = parser.load_data(input.f1, parameterTool.get("timeFormat"));
             if (df_log == null) return;
-            List<String> logmessageL = Arrays.asList(parser.preprocess(df_log.get(0, "Content")).trim().split("[_ ]"));
+            List<String> logmessageL = Arrays.asList(parser.preprocess(df_log.get(0, "Content")).trim().split("[ ]"));
             LogCluster matchCluster = parser.treeSearch(rootNode, logmessageL);
             if (matchCluster == null) {
                 LogCluster newCluster = new LogCluster(logmessageL);
@@ -70,7 +66,6 @@ public class FlinkDrain {
                     matchCluster.setLogTemplate(newTemplate);
                 }
             }
-            templateTime.add((System.currentTimeMillis() - start_time) / 1000);
             parseTree.update(rootNode);
             List<String> log_template = new ArrayList<>();
             log_template.add(String.join(" ", matchCluster.getLogTemplate()));
@@ -85,17 +80,14 @@ public class FlinkDrain {
             String eventID = parser.getHash(eventTemplate);
             Tuple7<String, String, String, String, String, String, String> tuple = new Tuple7<>(time, level, component, content, eventTemplate, parameterList, eventID);
             tuple.f2 = "1";
-            currentTemplate.f0 += 1;
-            currentTemplate.f1.add(eventTemplate);
-            template.update(currentTemplate);
-//            parser.printTree(rootNode, 0);
-//            System.out.println(parser.StamptoTime(time, "HH:mm:ss:SSS"));
-            output.collect(tuple);
-//            if (currentTemplate.f0 % 100 == 0) {
-//                FileWriter oo = new FileWriter(new File("src/main/resources/models/templates.json"));
-//                parser.saveTemplate(rootNode, 0, oo);
-//                oo.close();
-//            }
+            templateNum.add(1);
+            out.collect(tuple);
+//            parser.printTree(rootNode,0);
+            if (templateNum.getLocalValue() % 100 == 0) {
+                FileWriter oo = new FileWriter(new File("src/main/resources/models/templates.json"));
+                parser.saveTemplate(rootNode, 0, oo);
+                oo.close();
+            }
         }
 
         @Override
@@ -105,24 +97,18 @@ public class FlinkDrain {
                             "parseTree",
                             Node.class
                     );
-            ValueStateDescriptor<Tuple2<Integer, Set<String>>> descriptor_template =
-                    new ValueStateDescriptor<>(
-                            "template",
-                            TypeInformation.of(new TypeHint<Tuple2<Integer, Set<String>>>() {
-                            })
-                    );
             parseTree = getRuntimeContext().getState(descriptor_parseTree);
-            template = getRuntimeContext().getState(descriptor_template);
-            getRuntimeContext().addAccumulator("time-template", templateTime);
+            getRuntimeContext().addAccumulator("templateNum", templateNum);
         }
 
         @Override
         public void close() throws Exception {
+            if (templateNum.getLocalValue() == 0) return;
             ObjectOutputStream oo = new ObjectOutputStream(new FileOutputStream(
                     new File("src/main/resources/models/parseTree")));
             oo.writeObject(parseTree.value());
+            oo.close();
             log.info("parseTree serialization is done.");
-            super.close();
         }
     }
 }
