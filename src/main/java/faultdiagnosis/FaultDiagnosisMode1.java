@@ -1,5 +1,6 @@
 package faultdiagnosis;
 
+import TCFGmodel.TCFG;
 import TCFGmodel.TCFGUtil;
 import org.apache.flink.api.java.tuple.Tuple7;
 
@@ -7,7 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class FaultDiagnosisUnitMode1 implements FaultDiagnosisUnit{
+//Fault diagnosis with probability inference
+public class FaultDiagnosisMode1 implements FaultDiagnosis {
 
     //Power Law
     @Override
@@ -21,7 +23,7 @@ public class FaultDiagnosisUnitMode1 implements FaultDiagnosisUnit{
     @Override
     public double calProbabilityOfCurrentEntry(List<Tuple7> logList, Map<String, Map<String, Double>> paramMatrix, long timeWindow, long delta) {
 
-        FaultDiagnosisUtil faultDiagnosisUtil = new FaultDiagnosisUtil();
+        TCFGUtil faultDiagnosisUtil = new TCFGUtil();
         Tuple7 logEntryi = logList.get(logList.size()-1);
         List infectedProbList = new ArrayList();
         List suvivalProbList = new ArrayList();
@@ -88,5 +90,10 @@ public class FaultDiagnosisUnitMode1 implements FaultDiagnosisUnit{
 //            System.out.println("prob: " + probSum);
 //        }
         return probSum;
+    }
+
+    @Override
+    public List<Tuple7> detectSuspiciousRequest(TCFG tcfg, List<Tuple7> logList) {
+        return null;
     }
 }

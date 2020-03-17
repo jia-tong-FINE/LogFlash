@@ -3,7 +3,7 @@ package modelconstruction;
 import TCFGmodel.TCFG;
 import TCFGmodel.TCFGUtil;
 import faultdiagnosis.Anomaly;
-import faultdiagnosis.FaultDiagnosisUnitMode2;
+import faultdiagnosis.FaultDiagnosisMode2;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.common.typeinfo.TypeHint;
@@ -107,7 +107,7 @@ public class TCFGConstructerMode3 implements TCFGConstructer{
             //Fault Diagosis Process defnition
             TCFG tcfg = new TCFG();
             tcfg.paramMatrix2TCFG(tempTransferParamMatrix,parameterTool.getLong("delta"));
-            FaultDiagnosisUnitMode2 faultDiagnosisUnit = new FaultDiagnosisUnitMode2();
+            FaultDiagnosisMode2 faultDiagnosisUnit = new FaultDiagnosisMode2();
 //            int anomalies = 0;
             //TCFG Construction process
             List<String> priorEventIDList = tempTransferParamMatrix.getEventIDList();
@@ -223,7 +223,7 @@ public class TCFGConstructerMode3 implements TCFGConstructer{
 
         @Override
         public void close() throws Exception {
-            FaultDiagnosisUnitMode2 faultDiagnosis = new FaultDiagnosisUnitMode2();
+            FaultDiagnosisMode2 faultDiagnosis = new FaultDiagnosisMode2();
             TCFG tcfg = new TCFG();
             ParameterTool parameterTool = (ParameterTool) getRuntimeContext().getExecutionConfig().getGlobalJobParameters();
             tcfg.paramMatrix2TCFG(transferParamMatrix.value(),parameterTool.getLong("delta"));

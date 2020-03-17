@@ -1,8 +1,11 @@
 import TCFGmodel.ShareMemory;
+import TCFGmodel.TCFG;
 import dao.MysqlUtil;
 import modelconstruction.TCFGConstructerMode1;
 import modelconstruction.TCFGConstructerMode2;
 import modelconstruction.TCFGConstructerMode3;
+import org.apache.flink.api.java.tuple.Tuple7;
+import org.apache.flink.streaming.api.datastream.DataStream;
 import templatemining.FlinkDrain;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -27,7 +30,7 @@ public class WorkFlow {
         final Logger log = Logger.getLogger(WorkFlow.class);
         ParameterTool parameter = ParameterTool.fromPropertiesFile("src/main/resources/config.properties");
         String sp = parameter.get("shareMemoryFilePath");
-        ShareMemory sm = new ShareMemory(sp,"TCFG");
+        TCFG.sm = new ShareMemory(sp,"TCFG");
         switch (parameter.get("workFlowMode")) {
             default:
                 log.error("workFlowMode can only be 1 or 2");
@@ -67,10 +70,11 @@ public class WorkFlow {
                 env2.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
                 DataStreamSource<String> dataStream2 = env2.readTextFile(input_dir2 + File.separator + logName2);
 
-                dataStream2.map(line -> Tuple2.of(logdata2, line))
+                DataStream<Tuple7<String,String,String,String,String,String,String>> templateStream= dataStream2.map(line -> Tuple2.of(logdata2, line))
                         .returns(Types.TUPLE(Types.STRING, Types.STRING))
                         .keyBy(t -> t.f0)
-                        .process(new FlinkDrain.Parse())
+                        .process(new FlinkDrain.Parse());
+                templateStream
                         .assignTimestampsAndWatermarks(new WatermarkGenerator.BoundedOutOfOrdernessGenerator())
                         .keyBy(t -> t.f2)
                         .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))),Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
@@ -80,17 +84,5 @@ public class WorkFlow {
                 break;
 
         }
-    }
-
-    public static Properties getConfig() {
-        Properties properties = new Properties();
-        // 使用InPutStream流读取properties文件
-        try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader("src/main/resources/config.properties"));
-            properties.load(bufferedReader);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return properties;
     }
 }

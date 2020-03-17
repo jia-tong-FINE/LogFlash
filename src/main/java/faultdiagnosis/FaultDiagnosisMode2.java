@@ -1,16 +1,32 @@
 package faultdiagnosis;
 
+import TCFGmodel.ShareMemory;
 import TCFGmodel.TCFG;
+import TCFGmodel.TCFGUtil;
+import modelconstruction.TransferParamMatrix;
+import org.apache.flink.api.common.state.ValueState;
+import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.java.tuple.Tuple7;
+import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.configuration.Configuration;
+import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
+import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
+import org.apache.flink.util.Collector;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import com.alibaba.fastjson.JSON;
 
-public class FaultDiagnosisUnitMode3 {
+//Fault Diagnosis with Sequence anomaly, Redundancy anomaly and latency anomaly
+public class FaultDiagnosisMode2 implements FaultDiagnosis{
 
     public Anomaly faultDiagnosisProcess (TCFG tcfg, List<Tuple7> tempList) {
         Tuple7 latestNode = tempList.get(tempList.size()-1);
-        if (latestNode.f6.equals("c1be6b3b") || latestNode.f6.equals("f254962d") || latestNode.f6.equals("4e0d8acb") || latestNode.f6.equals("8b232782") || latestNode.f6.equals("172d727c") ||latestNode.f6.equals("4fe6a4f8") || latestNode.f6.equals("36fbaa86") || latestNode.f6.equals("5e9cb693") || latestNode.f6.equals("f5ffd670") || latestNode.f6.equals("3872f636") || latestNode.f6.equals("1ffd3268")) {
+        if (latestNode.f6.equals("f80a2e40")||latestNode.f6.equals("4e81c689")|| latestNode.f6.equals("3a294bba") || latestNode.f6.equals("c1be6b3b") || latestNode.f6.equals("f254962d") || latestNode.f6.equals("4e0d8acb") || latestNode.f6.equals("8b232782") || latestNode.f6.equals("172d727c") ||latestNode.f6.equals("4fe6a4f8") || latestNode.f6.equals("36fbaa86") || latestNode.f6.equals("5e9cb693") || latestNode.f6.equals("f5ffd670") || latestNode.f6.equals("3872f636") || latestNode.f6.equals("1ffd3268")) {
             return null;
         }
 
@@ -89,6 +105,7 @@ public class FaultDiagnosisUnitMode3 {
         return null;
     }
 
+    @Override
     public List<Tuple7> detectSuspiciousRequest(TCFG tcfg, List<Tuple7> tempList) {
         List<Tuple7> suspiciousRequest = new ArrayList<>();
         while (tempList.size() != 0) {
@@ -128,5 +145,71 @@ public class FaultDiagnosisUnitMode3 {
             suspiciousRequestReverse.add(suspiciousRequest.get(i));
         }
         return suspiciousRequestReverse;
+    }
+
+    @Override
+    public double calProbability(double ti, double tj, double alphaji, long timeWindow, long delta) {
+        return 0;
+    }
+
+    @Override
+    public double calProbabilityOfCurrentEntry(List<Tuple7> logList, Map<String, Map<String, Double>> paramMatrix, long timeWindow, long delta) {
+        return 0;
+    }
+
+    public static class FaultDiagnosisProcess extends ProcessWindowFunction<Tuple7<String, String, String, String, String, String, String>, String, String, TimeWindow> {
+
+        private ValueState<TCFG> tcfgValueState;
+        private ValueState<TCFGUtil.counter> counterValueState;
+
+
+        @Override
+        public void process(String s, Context context, Iterable<Tuple7<String, String, String, String, String, String, String>> elements, Collector<String> out) throws Exception {
+            ParameterTool parameterTool = (ParameterTool) getRuntimeContext().getExecutionConfig().getGlobalJobParameters();
+            long slidingWindowStep = parameterTool.getLong("slidingWindowStep");
+            TCFG tempTcfgValueState = tcfgValueState.value();
+
+            //Initialize paramMatrix and counter
+            if (tempTcfgValueState == null) {
+                tempTcfgValueState = new TCFG();
+                try {
+                    int tcfgSize = parameterTool.getInt("TCFGSize");
+                    byte[] b = new byte[tcfgSize];
+                    TCFG.sm.read(0, tcfgSize, b);
+                    JSON.parse(new String(b,"UTF-8"));
+                    tcfgValueState.update(tempTcfgValueState);
+                } catch (Exception e) {
+                    System.out.println("serialization failure");
+                }
+            }
+            TCFGUtil.counter counter = counterValueState.value();
+            if (counter == null) {
+                counter = new TCFGUtil.counter();
+            }
+        }
+
+        @Override
+        public void open(Configuration parameters) throws Exception {
+            ValueStateDescriptor<TCFG> descriptor1 =
+                    new ValueStateDescriptor<>(
+                            "tcfgValueState", // the state name
+                            TCFG.class // type information
+                    );
+            tcfgValueState = getRuntimeContext().getState(descriptor1);
+
+            ValueStateDescriptor<TCFGUtil.counter> descriptor2 =
+                    new ValueStateDescriptor<>(
+                            "counterValueState", // the state name
+                            TCFGUtil.counter.class // type information
+                    );
+            counterValueState = getRuntimeContext().getState(descriptor2);
+
+            super.open(parameters);
+        }
+
+        @Override
+        public void close() throws Exception {
+            super.close();
+        }
     }
 }

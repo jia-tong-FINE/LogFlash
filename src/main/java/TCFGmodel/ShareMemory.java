@@ -242,12 +242,12 @@ public class ShareMemory {
 
     }
 
-    public static void main(String arsg[]) throws Exception{
+    public static void main(String args[]) throws Exception{
         ParameterTool parameter = ParameterTool.fromPropertiesFile("src/main/resources/config.properties");
         String sp = parameter.get("shareMemoryFilePath");
         ShareMemory sm = new ShareMemory(sp,"test");
         String str = "中文测试";
-        sm.write(0, 40, str.getBytes("UTF-8"));
+        //sm.write(0, 40, str.getBytes("UTF-8"));
         byte[] b = new byte[40];
         sm.read(0, 40, b);
         System.out.println(new String(b,"UTF-8"));
