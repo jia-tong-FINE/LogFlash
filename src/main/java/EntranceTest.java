@@ -3,15 +3,15 @@
 //import org.apache.flink.streaming.api.datastream.DataStream;
 //import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 //import org.apache.flink.streaming.api.windowing.time.Time;
-//import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
+//import org.apache.flink.streaming.connectors.rabbitmq.RMQSource;
+//import org.apache.flink.streaming.connectors.rabbitmq.common.RMQConnectionConfig;
 //import org.apache.flink.util.Collector;
-//
-//import java.util.Properties;
 //
 //public class EntranceTest {
 //    public static void main(String[] args) throws Exception {
 //        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-//
+//        // Kafka connection below.
+//        /*
 //        Properties properties = new Properties();
 //        properties.setProperty("bootstrap.servers", "localhost:9092");
 //
@@ -24,7 +24,24 @@
 //
 //        DataStream<String> txt = env
 //                .addSource(wordConsumer);
-//
+//        */
+//        // RabbitMQ connection below.
+//        // /*
+//        RMQConnectionConfig connectionConfig = new RMQConnectionConfig.Builder()
+//                .setHost("localhost")
+//                .setPort(5672)
+//                .setVirtualHost("/")
+//                .setUserName("guest")
+//                .setPassword("guest")
+//                .build();
+//        DataStream<String> txt = env
+//                .addSource(new RMQSource<String>(
+//                        connectionConfig,
+//                        "word",
+//                        true,
+//                        new SimpleStringSchema()))
+//                .setParallelism(1);
+//        // */
 //        DataStream<WordWithCount> windowCount = txt.flatMap(new FlatMapFunction<String, WordWithCount>() {
 //            public void flatMap(String value, Collector<WordWithCount> out) throws Exception {
 //                String[] splits = value.split("\\s");
