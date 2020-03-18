@@ -20,7 +20,7 @@ import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
 
-public class TCFGConstructerMode3 implements TCFGConstructer{
+public class MatrixUpdaterMode3 implements MatrixUpdater {
     public static Queue<Integer> anomalyQueue = new LinkedBlockingQueue();
 
     private List<Tuple7> getTimeWindowLogList(long startTime, List<Tuple7> logList) {
@@ -126,7 +126,7 @@ public class TCFGConstructerMode3 implements TCFGConstructer{
                 tempList = TCFGUtil.deleteReplica(tempList);
                 tempList = new IndenpendencyFilter().filterIndependentNodes(tempList,tempTransferParamMatrix,slidingWindowStep,parameterTool.getLong("delta"));
                 if (inTime-context.window().getStart() > slidingWindowStep) {
-                    TCFGConstructerMode3 TCFGConstructer = new TCFGConstructerMode3();
+                    MatrixUpdaterMode3 TCFGConstructer = new MatrixUpdaterMode3();
                     List<Tuple7> slidingWindowList = TCFGConstructer.getTimeWindowLogList(inTime-slidingWindowStep,tempList);
                     //fault diagnosis process
                     Anomaly anomaly = faultDiagnosisUnit.faultDiagnosisProcess(tcfg,slidingWindowList);

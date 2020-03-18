@@ -1,9 +1,7 @@
 import TCFGmodel.ShareMemory;
 import TCFGmodel.TCFG;
-import dao.MysqlUtil;
-import modelconstruction.TCFGConstructerMode1;
-import modelconstruction.TCFGConstructerMode2;
-import modelconstruction.TCFGConstructerMode3;
+import modelconstruction.MatrixUpdaterMode1;
+import modelconstruction.MatrixUpdaterMode2;
 import org.apache.flink.api.java.tuple.Tuple7;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import templatemining.FlinkDrain;
@@ -13,15 +11,10 @@ import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.windowing.assigners.SlidingProcessingTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.log4j.Logger;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.util.*;
 
 public class WorkFlow {
 
@@ -54,7 +47,7 @@ public class WorkFlow {
                         .keyBy(t -> t.f2)
                         .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("timeWindow"))))
                         //.window(TumblingProcessingTimeWindows.of(Time.seconds(5)))
-                        .process(new TCFGConstructerMode1.TransferParamMatrixUpdate());
+                        .process(new MatrixUpdaterMode1.TransferParamMatrixUpdate());
                 //.print();
                 //.writeAsCsv(output_dir + File.separator + logName + "_flink.csv", FileSystem.WriteMode.OVERWRITE);
                 //addsink
@@ -78,7 +71,7 @@ public class WorkFlow {
                         .assignTimestampsAndWatermarks(new WatermarkGenerator.BoundedOutOfOrdernessGenerator())
                         .keyBy(t -> t.f2)
                         .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))),Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
-                        .process(new TCFGConstructerMode2.TransferParamMatrixUpdate());
+                        .process(new MatrixUpdaterMode2.TransferParamMatrixUpdate());
 
                 env2.execute();
                 break;

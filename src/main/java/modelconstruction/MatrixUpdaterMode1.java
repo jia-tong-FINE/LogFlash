@@ -15,7 +15,7 @@ import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
 
-public class TCFGConstructerMode1 implements TCFGConstructer{
+public class MatrixUpdaterMode1 implements MatrixUpdater {
     public static Queue<Integer> anomalyQueue = new LinkedBlockingQueue();
     @Override
     public double calGradientForInfected(long ti, long tj, TransferParamMatrix transferParamMatrix, List<Tuple7> tempList, long timeWindow, long delta) {
@@ -145,7 +145,7 @@ public class TCFGConstructerMode1 implements TCFGConstructer{
                     continue;
                 }
                 for (Tuple7 tuple: tempList) {
-                    TCFGConstructerMode1 TCFGConstructer = new TCFGConstructerMode1();
+                    MatrixUpdaterMode1 TCFGConstructer = new MatrixUpdaterMode1();
                     double gradient = TCFGConstructer.calGradientForInfected(Long.parseLong((String)in.f0), Long.parseLong((String)tuple.f0),tempTransferParamMatrix,tempList,parameterTool.getLong("timeWindow"),parameterTool.getLong("delta"));
                     if (gradient > parameterTool.getDouble("gradLimitation")) {
                         gradient = parameterTool.getDouble("gradLimitation");
@@ -166,11 +166,6 @@ public class TCFGConstructerMode1 implements TCFGConstructer{
             tempTransferParamMatrix.clearGradMatrix();
             transferParamMatrix.update(tempTransferParamMatrix);
 
-            if (counter.modResult(100) == 0) {
-                tempTransferParamMatrix.saveParamMatrix("http://127.0.0.1:5000/api/data",null);
-//                System.out.println(tempTransferParamMatrix.getParamMatrix());
-            }
-            counterValueState.update(counter);
 
         }
 

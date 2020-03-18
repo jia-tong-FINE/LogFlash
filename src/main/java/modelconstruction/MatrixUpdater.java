@@ -4,7 +4,7 @@ import org.apache.flink.api.java.tuple.Tuple7;
 
 import java.util.List;
 
-public interface TCFGConstructer {
+public interface MatrixUpdater {
 
     double calGradientForInfected(long a, long b, TransferParamMatrix c, List<Tuple7> d, long e, long f);
 

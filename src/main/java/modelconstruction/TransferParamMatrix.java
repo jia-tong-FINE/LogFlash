@@ -1,14 +1,6 @@
 package modelconstruction;
 
-import com.alibaba.fastjson.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.io.Serializable;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -149,100 +141,6 @@ public class TransferParamMatrix implements Serializable {
         }
     }
 
-    public String saveParamMatrix(String urlPath, String[] header) {
-
-        List list = new ArrayList<>();
-        list.add(eventIDandContent);
-        list.add(paramMatrix);
-        String paramMatrixJSON = JSONObject.toJSONString(list);
-//        System.out.println(paramMatrixJSON);
-            String status = "";
-
-            String responseStr = "";
-
-            PrintWriter out = null;
-
-            BufferedReader in = null;
-
-            try {
-
-                URL realUrl = new URL(urlPath);
-
-                // 打开和URL之间的连接
-
-                URLConnection conn = realUrl.openConnection();
-
-                HttpURLConnection httpUrlConnection = (HttpURLConnection) conn;
-
-                // 设置请求属性
-
-                httpUrlConnection.setRequestProperty("Content-Type", "application/json");
-
-                httpUrlConnection.setRequestProperty("x-adviewrtb-version", "2.1");
-
-                // 发送POST请求必须设置如下两行
-
-                httpUrlConnection.setDoOutput(true);
-
-                httpUrlConnection.setDoInput(true);
-
-                // 获取URLConnection对象对应的输出流
-
-                out = new PrintWriter(httpUrlConnection.getOutputStream());
-
-                // 发送请求参数
-
-                out.write(paramMatrixJSON);
-
-                // flush输出流的缓冲
-
-                out.flush();
-
-                httpUrlConnection.connect();
-
-                // 定义BufferedReader输入流来读取URL的响应
-
-                in = new BufferedReader(new InputStreamReader(httpUrlConnection.getInputStream()));
-
-                String line;
-
-                while ((line = in.readLine()) != null) {
-
-                    responseStr += line;
-
-                }
-
-                status = new Integer(httpUrlConnection.getResponseCode()).toString();
-
-
-            } catch (Exception e) {
-
-                System.out.println("发送 POST 请求出现异常！" + e);
-
-            }
-
-            // 使用finally块来关闭输出流、输入流
-
-            finally {
-
-                try {
-
-                    if (out != null) { out.close();}
-
-                    if (in != null) {in.close();}
-
-                } catch (Exception ex) {
-
-                    ex.printStackTrace();
-
-                }
-
-            }
-
-            return responseStr;
-
-
-    }
 
     public List<String> getEventIDList() {
         return eventIDList;

@@ -2,8 +2,7 @@ package modelconstruction;
 
 import TCFGmodel.TCFG;
 import TCFGmodel.TCFGUtil;
-import faultdiagnosis.Anomaly;
-import faultdiagnosis.FaultDiagnosisMode2;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.java.tuple.Tuple7;
@@ -13,13 +12,11 @@ import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
 
-import java.io.*;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
 
-public class TCFGConstructerMode2 implements TCFGConstructer{
-    public static Queue<Integer> anomalyQueue = new LinkedBlockingQueue();
+public class MatrixUpdaterMode2 implements MatrixUpdater {
 
     private List<Tuple7> getTimeWindowLogList(long startTime, List<Tuple7> logList) {
         List<Tuple7> timeWindowLogList = new ArrayList();
@@ -87,6 +84,17 @@ public class TCFGConstructerMode2 implements TCFGConstructer{
                 counter = new TCFGUtil.counter();
             }
             //Update transferParamMatrix in share memory
+            if (counter.modResult(parameterTool.getInt("writeInterval")) == 0) {
+                try {
+                    int transferParamMatrixSize = parameterTool.getInt("transferParamMatrixSize");
+                    int tcfgSize = parameterTool.getInt("TCFGSize");
+                    String tempTransferParamMatrixStr = JSONObject.toJSONString(tempTransferParamMatrix);
+                    TCFG.sm.write(tcfgSize, transferParamMatrixSize, tempTransferParamMatrixStr.getBytes("UTF-8"));
+                } catch (Exception e) {
+                    System.out.println("serialization failure");
+                }
+            }
+            counterValueState.update(counter);
 
             //Fault Diagosis Process defnition
             TCFG tcfg = new TCFG();
@@ -108,7 +116,7 @@ public class TCFGConstructerMode2 implements TCFGConstructer{
                 tempList = TCFGUtil.deleteReplica(tempList);
                 tempList = new IndenpendencyFilter().filterIndependentNodes(tempList,tempTransferParamMatrix,slidingWindowStep,parameterTool.getLong("delta"));
                 if (inTime-context.window().getStart() > slidingWindowStep) {
-                    TCFGConstructerMode2 TCFGConstructer = new TCFGConstructerMode2();
+                    MatrixUpdaterMode2 TCFGConstructer = new MatrixUpdaterMode2();
                     List<Tuple7> slidingWindowList = TCFGConstructer.getTimeWindowLogList(inTime-slidingWindowStep,tempList);
                     //Start grad computation
                     for (Tuple7 tuple: slidingWindowList) {
@@ -137,13 +145,6 @@ public class TCFGConstructerMode2 implements TCFGConstructer{
             tempTransferParamMatrix.decay(parameterTool.getDouble("beta"));
             tempTransferParamMatrix.clearGradMatrix();
             transferParamMatrix.update(tempTransferParamMatrix);
-            //end matrix update
-            if (counter.modResult(100) == 0) {
-                tempTransferParamMatrix.saveParamMatrix("http://127.0.0.1:5000/api/data",null);
-//                System.out.println(tempTransferParamMatrix.getParamMatrix());
-            }
-            counterValueState.update(counter);
-
         }
 
         @Override
@@ -167,13 +168,6 @@ public class TCFGConstructerMode2 implements TCFGConstructer{
 
         @Override
         public void close() throws Exception {
-
-            //Model Serialization
-            ObjectOutputStream oo = new ObjectOutputStream(new FileOutputStream(
-                    new File("src/main/resources/models/transferParamMatrix")));
-            oo.writeObject(transferParamMatrix.value());
-            System.out.println("model serialization success");
-            //Model Serialization
             super.close();
         }
     }
