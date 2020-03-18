@@ -13,23 +13,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LogParser {
-    private String logName, path, savePath, log_format;
+    private String log_format;
     private String[] rex;
     private int depth, maxChild;
     private double st;
-    private DataFrame<String> df_log;
 
-    public LogParser() {}
-
-    LogParser(String logName, String[] rex, String path, String savePath, String log_format, int depth, int maxChild, double st) {
-        this.logName = logName;
-        this.rex = rex;
-        this.path = path;
-        this.savePath = savePath;
-        this.log_format = log_format;
-        this.depth = depth - 2;
-        this.maxChild = maxChild;
-        this.st = st;
+    public LogParser() {
     }
 
     LogParser(String[] rex, String log_format, int depth, int maxChild, double st) {
@@ -76,30 +65,6 @@ public class LogParser {
         return map;
     }
 
-    private DataFrame<String> log_to_dataFrame(String log_file, Pattern regex, List<String> headers) {
-        DataFrame<String> logdf = new DataFrame<>(headers);
-        try {
-            FileReader fr = new FileReader(LogParser.class.getResource(log_file).getPath());
-            BufferedReader br = new BufferedReader(fr);
-            String line;
-            while ((line = br.readLine()) != null) {
-                Matcher m = regex.matcher(line.trim());
-                if (m.find()) {
-                    List<String> message = new ArrayList<>();
-                    for (String header : headers) {
-                        message.add(m.group(header));
-                    }
-                    logdf.append(message);
-                }
-            }
-            br.close();
-            fr.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return logdf;
-    }
-
     public String TimetoStamp(String time, String pattern) throws ParseException {
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
         formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -133,13 +98,6 @@ public class LogParser {
             logdf.append(message);
         }
         return logdf;
-    }
-
-    private void load_data() {
-        Map<String, Object> map = generate_logFormat_regex(log_format);
-        List<String> headers = (List<String>) map.get("headers");
-        Pattern regex = (Pattern) map.get("regex");
-        df_log = log_to_dataFrame(path + File.separator + logName, regex, headers);
     }
 
     DataFrame<String> load_data(String s, String timeFormat) {
@@ -327,24 +285,6 @@ public class LogParser {
         return resultStr.substring(0, 8);
     }
 
-    private String get_parameter_list(int rowID) {
-        String template_regex = df_log.get(rowID, "EventTemplate").replaceAll("<.{1,5}>", "<*>");
-        if (!template_regex.contains("<*>")) return "";
-        template_regex = template_regex.replaceAll("([^A-Za-z0-9])", "\\\\$0");
-        template_regex = template_regex.replaceAll(" +", "\\s+");
-        template_regex = "^" + template_regex.replaceAll("\\\\<\\\\\\*\\\\>", "(.*?)") + "$";
-        Pattern p = Pattern.compile(template_regex);
-        Matcher m = p.matcher(df_log.get(rowID, "Content"));
-        List<String> parameter_list = new ArrayList<>();
-        if (m.find()) {
-            int num = m.groupCount();
-            for (int i = 1; i <= num; i++) {
-                parameter_list.add(m.group(i));
-            }
-        }
-        return parameter_list.toString();
-    }
-
     String get_parameter_list(DataFrame<String> df_log) {
         String template_regex = df_log.get(0, "EventTemplate").replaceAll("<.{1,5}>", "<*>");
         if (!template_regex.contains("<*>")) return "";
@@ -361,90 +301,6 @@ public class LogParser {
             }
         }
         return parameter_list.toString();
-    }
-
-
-    private void outputResult(List<LogCluster> logClustL) throws IOException {
-        String[] log_templates = new String[df_log.length()];
-        String[] log_templateids = new String[df_log.length()];
-        for (LogCluster logClust : logClustL) {
-            String template_str = String.join(" ", logClust.getLogTemplate());
-            String template_id = getHash(template_str);
-            for (int logID : logClust.getLogIDL()) {
-                logID -= 1;
-                log_templates[logID] = template_str;
-                log_templateids[logID] = template_id;
-            }
-        }
-        df_log.add("EventId", Arrays.asList(log_templateids));
-        df_log.add("EventTemplate", Arrays.asList(log_templates));
-        List<String> parameter_list = new ArrayList<>();
-        for (int i = 0; i < df_log.length(); i++)
-            parameter_list.add(get_parameter_list(i));
-        df_log.add("ParameterList", parameter_list);
-        List<String> list = new ArrayList<>();
-        for (int i = 1; i <= df_log.length(); i++) {
-            list.add(String.valueOf(i));
-        }
-        DataFrame<String> d = new DataFrame<>();
-        d.add("LineID", list);
-        df_log = d.join(df_log);
-        df_log.writeCsv("src/main/resources/" + File.separator + savePath + File.separator + logName + "_structured.csv");
-        Set<String> uniqueSet = new HashSet<>(df_log.col("EventTemplate"));
-        Map<String, Integer> map = new HashMap<>();
-        for (String temp : uniqueSet) {
-            map.put(temp, Collections.frequency(df_log.col("EventTemplate"), temp));
-        }
-        DataFrame<String> df_event = new DataFrame<>();
-        list = new ArrayList<>();
-        for (String s : new ArrayList<>(map.keySet()))
-            list.add(getHash(s));
-        df_event.add("EventId", list);
-        df_event.add("EventTemplate", new ArrayList<>(map.keySet()));
-        list = new ArrayList<>();
-        for (Integer s : map.values())
-            list.add(s.toString());
-        df_event.add("Occurrences", list);
-        df_event.writeCsv("src/main/resources/" + savePath + File.separator + logName + "_templates.csv");
-    }
-
-    //Test function for log parsing withou flink
-    void parse() {
-//        System.out.println("Parsing file: " + path + File.separator + logName);
-        double start_time = System.currentTimeMillis();
-        Node rootNode = new Node();
-        List<LogCluster> logCluL = new ArrayList<>();
-        load_data();
-        int count = 0;
-        int length = df_log.length();
-        for (int logID = 0; logID < length; logID++) {
-            List<String> logmessageL = Arrays.asList(preprocess(df_log.get(logID, "Content")).trim().split(" "));
-            LogCluster matchCluster = treeSearch(rootNode, logmessageL);
-            if (matchCluster != null) {
-                List<String> newTemplate = getTemplate(logmessageL, matchCluster.getLogTemplate());
-                matchCluster.setLogIDL(logID + 1);
-                if (!String.join(" ", newTemplate).equals(String.join(" ", matchCluster.getLogTemplate()))) {
-                    matchCluster.setLogTemplate(newTemplate);
-                }
-            } else {
-                List<Integer> logIDList = new ArrayList<>();
-                logIDList.add(logID + 1);
-                LogCluster newCluster = new LogCluster(logmessageL, logIDList);
-                logCluL.add(newCluster);
-                addSeqToPrefixTree(rootNode, newCluster);
-            }
-            count += 1;
-            if (count % 1000 == 0 || count == df_log.length()) {
-                System.out.printf("Processed %.1f%% of log lines.\n", (count * 100.0 / df_log.length()));
-            }
-        }
-//        System.out.println("Parsing done. Time taken: " + (System.currentTimeMillis() - start_time) / 1000 + "s");
-        try {
-            outputResult(logCluL);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        printTree(rootNode, 0);
     }
 
     void printTree(Node node, int dep) {
@@ -474,8 +330,8 @@ public class LogParser {
     }
 
     void saveTemplate(Node node, int dep, FileWriter oo) throws IOException {
-        if (node.getDepth() == 1 && node.getDigitOrtoken().equals("1")){
-            for (Map.Entry<String, Node> entry : node.getChildD().entrySet()){
+        if (node.getDepth() == 1 && node.getDigitOrtoken().equals("1")) {
+            for (Map.Entry<String, Node> entry : node.getChildD().entrySet()) {
                 List<LogCluster> lg = entry.getValue().getChildLG();
                 for (LogCluster t : lg) {
                     String template = String.join(" ", t.getLogTemplate());

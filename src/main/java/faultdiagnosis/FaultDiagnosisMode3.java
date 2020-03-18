@@ -6,7 +6,7 @@ import org.apache.flink.api.java.tuple.Tuple7;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FaultDiagnosisUnitMode3 {
+public class FaultDiagnosisMode3 {
 
     public Anomaly faultDiagnosisProcess (TCFG tcfg, List<Tuple7> tempList) {
         Tuple7 latestNode = tempList.get(tempList.size()-1);

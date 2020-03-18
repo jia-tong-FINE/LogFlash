@@ -1,7 +1,7 @@
 package modelconstruction;
 
 import TCFGmodel.TCFGUtil;
-import faultdiagnosis.FaultDiagnosisUnitMode1;
+import faultdiagnosis.FaultDiagnosisMode1;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.java.tuple.Tuple7;
@@ -100,7 +100,7 @@ public class TCFGConstructerMode1 implements TCFGConstructer{
                 counter = new TCFGUtil.counter();
             }
             //Fault Diagosis Process
-            FaultDiagnosisUnitMode1 faultDiagnosisUnit = new FaultDiagnosisUnitMode1();
+            FaultDiagnosisMode1 faultDiagnosisUnit = new FaultDiagnosisMode1();
             Iterator<Tuple7<String, String, String, String, String, String, String>> iter_f = input.iterator();
             List<Tuple7> tempList_f = new ArrayList<>();
             int anomalies = 0;
@@ -166,7 +166,7 @@ public class TCFGConstructerMode1 implements TCFGConstructer{
             tempTransferParamMatrix.clearGradMatrix();
             transferParamMatrix.update(tempTransferParamMatrix);
 
-            if (counter.modResult() == 0) {
+            if (counter.modResult(100) == 0) {
                 tempTransferParamMatrix.saveParamMatrix("http://127.0.0.1:5000/api/data",null);
 //                System.out.println(tempTransferParamMatrix.getParamMatrix());
             }

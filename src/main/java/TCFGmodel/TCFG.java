@@ -1,9 +1,6 @@
 package TCFGmodel;
 
-import faultdiagnosis.FaultDiagnosisUtil;
 import modelconstruction.TransferParamMatrix;
-import org.apache.flink.api.java.utils.ParameterTool;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +10,7 @@ import java.util.Map;
  */
 
 public class TCFG {
+    public static ShareMemory sm;
 
     private List<Node> nodes;
     private List<Edge> edges;
@@ -63,28 +61,27 @@ public class TCFG {
         }
         return flag;
     }
-
     public void paramMatrix2TCFG (TransferParamMatrix transferParamMatrix, long delta) {
 
         Map<String, Map<String, Double>> paramMatrix = transferParamMatrix.getParamMatrix();
         Map<String, Map<String, Long>> timeMatrix = transferParamMatrix.getTimeMatrix();
-        FaultDiagnosisUtil faultDiagnosisUtil = new FaultDiagnosisUtil();
+        TCFGUtil tcfgUtil = new TCFGUtil();
         for (String key1: paramMatrix.keySet()) {
-            Node in_node = new Node();
+            TCFG.Node in_node = new TCFG.Node();
             in_node.node_id = key1;
             if (!ifInNodeList(in_node)) {
                 nodes.add(in_node);
             }
             for (String key2: paramMatrix.get(key1).keySet()) {
-                Node out_node = new Node();
+                TCFG.Node out_node = new TCFG.Node();
                 out_node.node_id = key2;
                 if (!ifInNodeList(out_node)) {
                     nodes.add(out_node);
                 }
                 double alphaji = paramMatrix.get(key1).get(key2);
-                double transitionProb = faultDiagnosisUtil.calDefinitIntegral(delta, 2*delta, 100, alphaji, delta);
+                double transitionProb = tcfgUtil.calDefinitIntegral(delta, 2*delta, 100, alphaji, delta);
                 if (transitionProb > 0.1) {
-                    Edge edge = new Edge();
+                    TCFG.Edge edge = new TCFG.Edge();
                     edge.in_node = in_node;
                     edge.out_node = out_node;
                     edge.time_weight = timeMatrix.get(in_node.node_id).get(out_node.node_id);
@@ -93,11 +90,6 @@ public class TCFG {
             }
         }
     }
-
-    public void setTimeStamp(TransferParamMatrix transferParamMatrix) {
-
-    }
-
 
     public List<Node> getNodes() {
         return nodes;
