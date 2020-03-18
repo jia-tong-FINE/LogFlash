@@ -74,34 +74,24 @@ public class TCFGConstructerMode2 implements TCFGConstructer{
         public void process(String s, Context context, Iterable<Tuple7<String, String, String, String, String, String, String>> input, Collector<String> out) throws Exception {
 
             ParameterTool parameterTool = (ParameterTool) getRuntimeContext().getExecutionConfig().getGlobalJobParameters();
-//            long slidingWindowSize = parameterTool.getLong("slidingWindowSize");
             long slidingWindowStep = parameterTool.getLong("slidingWindowStep");
-            TransferParamMatrix tempTransferParamMatrix = transferParamMatrix.value();
 
             //Initialize paramMatrix and counter
+            TransferParamMatrix tempTransferParamMatrix = transferParamMatrix.value();
             if (tempTransferParamMatrix == null) {
                 tempTransferParamMatrix = new TransferParamMatrix();
-                File file = new File("src/main/resources/models/transferParamMatrix");
-                if (file.exists()) {
-                    try {
-                        ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
-                        tempTransferParamMatrix = (TransferParamMatrix) in.readObject();
-                        transferParamMatrix.update(tempTransferParamMatrix);
-                    } catch (Exception e) {
-                        System.out.println("serialization failure");
-                    }
-                }
+                transferParamMatrix.update(tempTransferParamMatrix);
             }
             TCFGUtil.counter counter = counterValueState.value();
             if (counter == null) {
                 counter = new TCFGUtil.counter();
             }
+            //Update transferParamMatrix in share memory
 
             //Fault Diagosis Process defnition
             TCFG tcfg = new TCFG();
             tcfg.paramMatrix2TCFG(tempTransferParamMatrix,parameterTool.getLong("delta"));
-            FaultDiagnosisMode2 faultDiagnosisUnit = new FaultDiagnosisMode2();
-//            int anomalies = 0;
+
             //TCFG Construction process
             List<String> priorEventIDList = tempTransferParamMatrix.getEventIDList();
             List<Tuple7> tempList = new ArrayList<>();
@@ -120,37 +110,6 @@ public class TCFGConstructerMode2 implements TCFGConstructer{
                 if (inTime-context.window().getStart() > slidingWindowStep) {
                     TCFGConstructerMode2 TCFGConstructer = new TCFGConstructerMode2();
                     List<Tuple7> slidingWindowList = TCFGConstructer.getTimeWindowLogList(inTime-slidingWindowStep,tempList);
-
-                    Anomaly anomaly = faultDiagnosisUnit.faultDiagnosisProcess(tcfg,slidingWindowList);
-                    if (anomaly != null) {
-                        //insert anomalies into database
-//                        MysqlUtil mysqlUtil = new MysqlUtil();
-//                        mysqlUtil.insertAnomaly(anomaly);
-                        for (int i = 0; i< tcfg.getEdges().size(); i++) {
-                            String inNode = tcfg.getEdges().get(i).getIn_node().getNode_id();
-                            String outNode = tcfg.getEdges().get(i).getOut_node().getNode_id();
-                            if (anomaly.getAnomalyLog().f6.equals(inNode)) {
-                                System.out.println("inNode:" + inNode + " outNode: " + outNode);
-                            }
-                            if (anomaly.getAnomalyLog().f6.equals(outNode)) {
-                                System.out.println("inNode:" + inNode + " outNode: " + outNode);
-                            }
-                        }
-                        for (Tuple7 tuple:anomaly.getAnomalyLogList()) {
-                            System.out.println(tuple.f6);
-                        }
-//                        FileWriter writer = new FileWriter("src/main/resources/models/anomalies", true);
-//                        writer.write("1\n");
-//                        writer.close();
-                        System.out.println(anomaly.getAnomalyLog().f4 + " @ " + anomaly.getAnomalyLog().f6 + " @ " + anomaly.getAnomalyLog().f3);
-                        System.out.println(anomaly.getAnomalyType());
-                        List<String> anomalyList = new ArrayList<>();
-                        for (Tuple7 log: anomaly.getAnomalyLogList()) {
-                            anomalyList.add((String)log.f6);
-                        }
-//                        System.out.println(anomalyList);
-//                        System.out.println(anomalies);
-                    }
                     //Start grad computation
                     for (Tuple7 tuple: slidingWindowList) {
                         if (slidingWindowList.indexOf(tuple) == slidingWindowList.size()-1) {
@@ -179,7 +138,7 @@ public class TCFGConstructerMode2 implements TCFGConstructer{
             tempTransferParamMatrix.clearGradMatrix();
             transferParamMatrix.update(tempTransferParamMatrix);
             //end matrix update
-            if (counter.modResult() == 0) {
+            if (counter.modResult(100) == 0) {
                 tempTransferParamMatrix.saveParamMatrix("http://127.0.0.1:5000/api/data",null);
 //                System.out.println(tempTransferParamMatrix.getParamMatrix());
             }

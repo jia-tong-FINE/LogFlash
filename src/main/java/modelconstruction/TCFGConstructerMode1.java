@@ -166,7 +166,7 @@ public class TCFGConstructerMode1 implements TCFGConstructer{
             tempTransferParamMatrix.clearGradMatrix();
             transferParamMatrix.update(tempTransferParamMatrix);
 
-            if (counter.modResult() == 0) {
+            if (counter.modResult(100) == 0) {
                 tempTransferParamMatrix.saveParamMatrix("http://127.0.0.1:5000/api/data",null);
 //                System.out.println(tempTransferParamMatrix.getParamMatrix());
             }

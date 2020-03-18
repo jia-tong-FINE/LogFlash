@@ -13,4 +13,6 @@ public interface FaultDiagnosis {
     double calProbabilityOfCurrentEntry(List<Tuple7> logList, Map<String, Map<String, Double>> paramMatrix, long timeWindow, long delta);
 
     List<Tuple7> detectSuspiciousRequest(TCFG tcfg, List<Tuple7> logList);
+
+    Anomaly faultDiagnosisProcess (TCFG tcfg, List<Tuple7> tempList);
 }

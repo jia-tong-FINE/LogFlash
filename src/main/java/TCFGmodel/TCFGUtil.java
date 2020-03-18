@@ -60,9 +60,9 @@ public class TCFGUtil {
             this.interval = Integer.valueOf(properties.getProperty("interval"));
         }
 
-        public int modResult() {
-            count ++;
+        public int modResult(int interval) {
             count = count%interval;
+            count ++;
             return count;
         }
     }

@@ -8,6 +8,10 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.Properties;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.flink.api.java.utils.ParameterTool;
 
 
@@ -246,11 +250,23 @@ public class ShareMemory {
         ParameterTool parameter = ParameterTool.fromPropertiesFile("src/main/resources/config.properties");
         String sp = parameter.get("shareMemoryFilePath");
         ShareMemory sm = new ShareMemory(sp,"test");
+        TCFG testTCFG = new TCFG();
         String str = "中文测试";
         //sm.write(0, 40, str.getBytes("UTF-8"));
         byte[] b = new byte[40];
         sm.read(0, 40, b);
         System.out.println(new String(b,"UTF-8"));
+
+//        int tcfgSize = parameter.getInt("TCFGSize");
+//        byte[] b = new byte[tcfgSize];
+//        //String testTCFGStr = JSONObject.toJSONString(testTCFG);
+//        //sm.write(0, 40, testTCFGStr.getBytes("UTF-8"));
+//        sm.read(0, tcfgSize, b);
+////        String tcfgString = JSONArray.toJSONString(b);
+//        TCFG tempTcfgValueState = JSONObject.parseObject(b,TCFG.class);
+//        System.out.println(tempTcfgValueState.getEdges());
+//        JSON.parse(new String(b,"UTF-8"));
+//        tcfgValueState.update(tempTcfgValueState);
     }
 }
 
