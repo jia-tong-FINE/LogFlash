@@ -1,5 +1,8 @@
 import TCFGmodel.ShareMemory;
 import TCFGmodel.TCFG;
+import TCFGmodel.TCFGConstructor;
+import faultdiagnosis.FaultDiagnosisMode2;
+import humanfeedback.SuspiciousRegionMonitor;
 import modelconstruction.MatrixUpdaterMode1;
 import modelconstruction.MatrixUpdaterMode2;
 import org.apache.flink.api.java.tuple.Tuple7;
@@ -33,7 +36,6 @@ public class WorkFlow {
                 String logName = "adc-06-04-2019-2";
                 //String logName = "yarn-resourcemanager-cleaned";
                 String input_dir = String.format("src/main/resources/data/%s/raw", logdata);
-
                 StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment().setParallelism(1);
                 env.getConfig().setGlobalJobParameters(parameter);
                 env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
@@ -67,12 +69,30 @@ public class WorkFlow {
                         .returns(Types.TUPLE(Types.STRING, Types.STRING))
                         .keyBy(t -> t.f0)
                         .process(new FlinkDrain.Parse());
+                //ParamMatrix Update
                 templateStream
                         .assignTimestampsAndWatermarks(new WatermarkGenerator.BoundedOutOfOrdernessGenerator())
                         .keyBy(t -> t.f2)
                         .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))),Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
                         .process(new MatrixUpdaterMode2.TransferParamMatrixUpdate());
-
+                //Fault Diagnosis
+                templateStream
+                        .assignTimestampsAndWatermarks(new WatermarkGenerator.BoundedOutOfOrdernessGenerator())
+                        .keyBy(t -> t.f2)
+                        .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))),Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
+                        .process(new FaultDiagnosisMode2.FaultDiagnosisProcess());
+                //TCFG Construction
+                templateStream
+                        .assignTimestampsAndWatermarks(new WatermarkGenerator.BoundedOutOfOrdernessGenerator())
+                        .keyBy(t -> t.f2)
+                        .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))),Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
+                        .process(new TCFGConstructor.TCFGConstructionProcess());
+                //Human Feedback-aware Tuning
+                templateStream
+                        .assignTimestampsAndWatermarks(new WatermarkGenerator.BoundedOutOfOrdernessGenerator())
+                        .keyBy(t -> t.f2)
+                        .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))),Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
+                        .process(new SuspiciousRegionMonitor.SuspiciousRegionMonitoring());
                 env2.execute();
                 break;
 

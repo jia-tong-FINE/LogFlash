@@ -28,4 +28,12 @@ public class TuningRegion {
         eventWhiteList.add(eventID);
     }
 
+    public void deleteEventFromWhiteList(String eventID) {
+        eventWhiteList.remove(eventID);
+    }
+
+    public boolean isEmpty() {
+        return anomalyQueue.isEmpty();
+    }
+
 }

@@ -6,19 +6,15 @@ import java.util.Queue;
 
 public class SuspiciousRegion {
 
-    Queue<Anomaly> anomalyQueue = new LinkedList<>();
+    public Queue<Anomaly> sequenceAnomalyQueue = new LinkedList<>();
+    public Queue<Anomaly> latencyAnomalyQueue = new LinkedList<>();
+    public Queue<Anomaly> redundancyAnomalyQueue = new LinkedList<>();
 
-    public void addAnomalyToQueue(Anomaly e) {
-        anomalyQueue.offer(e);
+    public boolean isEmpty() {
+        if (sequenceAnomalyQueue.isEmpty() && latencyAnomalyQueue.isEmpty() && redundancyAnomalyQueue.isEmpty()) {
+            return true;
+        }
+        return false;
     }
-
-    public void pollAnomalyFromQueue() {
-        anomalyQueue.poll();
-    }
-
-    public Anomaly showAnomalyFromQueue() {
-        return anomalyQueue.element();
-    }
-
 
 }
