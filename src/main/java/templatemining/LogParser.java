@@ -18,9 +18,6 @@ public class LogParser {
     private int depth, maxChild;
     private double st;
 
-    public LogParser() {
-    }
-
     LogParser(String[] rex, String log_format, int depth, int maxChild, double st) {
         this.rex = rex;
         this.log_format = log_format;
@@ -47,7 +44,7 @@ public class LogParser {
                 if (splitter.contains("["))
                     splitter = splitter.replaceAll("\\[", "\\\\[");
                 if (splitter.contains("]"))
-                    splitter = splitter.replaceAll("\\]", "\\\\]");
+                    splitter = splitter.replaceAll("]", "\\\\]");
                 regex.append(splitter);
             } else {
                 String header = splitters.get(i).replace("<", "").replace(">", "");
@@ -127,18 +124,21 @@ public class LogParser {
     private Map<String, Double> seqDist(List<String> seq1, List<String> seq2) {
         double simTokens = 0.0;
         double numOfPar = 0.0;
-        for (int i = 0; i < seq1.size(); i++) {
-            String token1 = seq1.get(i);
-            String token2 = seq2.get(i);
-            if (token1.equals("<*>")) {
-                numOfPar += 1;
-                continue;
+        double retVal = 1.0;
+        if (!seq1.equals(seq2)) {
+            for (int i = 0; i < seq1.size(); i++) {
+                String token1 = seq1.get(i);
+                String token2 = seq2.get(i);
+                if (token1.equals("<*>")) {
+                    numOfPar += 1;
+                    continue;
+                }
+                if (token1.equals(token2)) {
+                    simTokens += 1;
+                }
             }
-            if (token1.equals(token2)) {
-                simTokens += 1;
-            }
+            retVal = simTokens / seq1.size();
         }
-        double retVal = simTokens / seq1.size();
         Map<String, Double> map = new HashMap<>();
         map.put("retVal", retVal);
         map.put("numOfPar", numOfPar);
