@@ -93,6 +93,7 @@ public class TransferParamMatrix implements Serializable {
 
     //add new template into the paramMatrix and gradMatrix
     public void addNewTemplate(String EventID, String EventContent, Double alpha) {
+        if (eventIDList.contains(EventID)) return;
         eventIDList.add(EventID);
         eventIDandContent.put(EventID,EventContent);
         Map<String, Double> newParamColumn = new HashMap<>();

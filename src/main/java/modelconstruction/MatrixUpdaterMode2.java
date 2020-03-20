@@ -23,7 +23,7 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
     private List<Tuple7> getTimeWindowLogList(long startTime, List<Tuple7> logList) {
         List<Tuple7> timeWindowLogList = new ArrayList();
         for (Tuple7 tuple: logList) {
-            if (Long.parseLong((String)tuple.f0)>startTime) {
+            if (Long.parseLong((String)tuple.f0) > startTime) {
                 timeWindowLogList.add(tuple);
             }
         }
@@ -89,13 +89,20 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
             if (counter.modResult(parameterTool.getInt("writeInterval")) == 0) {
                 try {
                     //handle human feedback
+                    List<String> priorEventIDList = tempTransferParamMatrix.getEventIDList();
                     while (!tuningRegion.isEmpty()) {
                         Anomaly anomaly = tuningRegion.pollAnomalyFromQueue();
+                        Tuple7 in = anomaly.getAnomalyLog();
                         if (anomaly.getAnomalyType() == "Latency") {
-                            
+                            List<Tuple7> tempList = TCFGUtil.deleteReplica(anomaly.getAnomalyLogList());
+                            for (Tuple7 tuple: tempList) {
+                                if (!priorEventIDList.contains(tuple.f6))
+                                    continue;
+                                tempTransferParamMatrix.updateTimeMatrix((String)in.f6,(String)tuple.f6,Long.parseLong((String)in.f0)- Long.parseLong((String)tuple.f0));
+                            }
                         }
                         if (anomaly.getAnomalyType() == "Redundancy") {
-
+                            tempTransferParamMatrix.addNewTemplate((String)in.f6,(String)in.f4,parameterTool.getDouble("alpha"));
                         }
                     }
                     //update share memory
@@ -124,7 +131,7 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
                 }
                 long inTime = Long.parseLong((String)in.f0);
                 //add new template to matrix update process during training
-                if (trainingFlag == 1) {
+                if (trainingFlag == 1 || priorEventIDList.contains(in.f6)) {
                     tempList.add(in);
                 }
                 tempList = TCFGUtil.deleteReplica(tempList);
