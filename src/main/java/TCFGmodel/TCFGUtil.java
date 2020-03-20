@@ -1,6 +1,7 @@
 package TCFGmodel;
 
 
+import com.alibaba.fastjson.JSONObject;
 import modelconstruction.TransferParamMatrix;
 import org.apache.flink.api.java.tuple.Tuple7;
 
@@ -97,6 +98,12 @@ public class TCFGUtil {
         return sum*e;
     }
 
-
+//    public TCFG getTCFGFromMemory() {
+//        Properties properties = getConfig();
+//        int tcfgSize = Long.parseLong(properties.getProperty("TCFGSize"));
+//        byte[] b = new byte[tcfgSize];
+//        TCFG.sm.read(1, tcfgSize, b);
+//        return (JSONObject.parseObject(b, TCFG.class));
+//    }
 
 }

@@ -1,3 +1,5 @@
+package workflow;
+
 import TCFGmodel.ShareMemory;
 import TCFGmodel.TCFG;
 import TCFGmodel.TCFGConstructor;
@@ -19,11 +21,11 @@ import org.apache.log4j.Logger;
 
 import java.io.File;
 
-public class WorkFlow {
+public class WorkFlowMode2 implements WorkFlow{
 
     public static void main(String[] args) throws Exception {
 
-        final Logger log = Logger.getLogger(WorkFlow.class);
+        final Logger log = Logger.getLogger(WorkFlowMode2.class);
         ParameterTool parameter = ParameterTool.fromPropertiesFile("src/main/resources/config.properties");
         String sp = parameter.get("shareMemoryFilePath");
         TCFG.sm = new ShareMemory(sp,"TCFG");
