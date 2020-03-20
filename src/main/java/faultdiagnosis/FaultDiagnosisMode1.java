@@ -96,4 +96,9 @@ public class FaultDiagnosisMode1 implements FaultDiagnosis {
     public List<Tuple7> detectSuspiciousRequest(TCFG tcfg, List<Tuple7> logList) {
         return null;
     }
+
+    @Override
+    public Anomaly faultDiagnosisProcess(TCFG tcfg, List<Tuple7> tempList) {
+        return null;
+    }
 }

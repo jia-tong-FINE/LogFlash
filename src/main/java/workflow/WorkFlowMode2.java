@@ -5,7 +5,6 @@ import TCFGmodel.TCFG;
 import TCFGmodel.TCFGConstructor;
 import faultdiagnosis.FaultDiagnosisMode2;
 import humanfeedback.SuspiciousRegionMonitor;
-import modelconstruction.MatrixUpdaterMode1;
 import modelconstruction.MatrixUpdaterMode2;
 import org.apache.flink.api.java.tuple.Tuple7;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -51,7 +50,7 @@ public class WorkFlowMode2 implements WorkFlow{
                         .keyBy(t -> t.f2)
                         .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("timeWindow"))))
                         //.window(TumblingProcessingTimeWindows.of(Time.seconds(5)))
-                        .process(new MatrixUpdaterMode1.TransferParamMatrixUpdate());
+                        .process(new MatrixUpdaterMode2.TransferParamMatrixUpdate());
                 //.print();
                 //.writeAsCsv(output_dir + File.separator + logName + "_flink.csv", FileSystem.WriteMode.OVERWRITE);
                 //addsink

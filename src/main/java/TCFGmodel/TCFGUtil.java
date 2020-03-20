@@ -1,15 +1,12 @@
 package TCFGmodel;
 
 
-import com.alibaba.fastjson.JSONObject;
-import modelconstruction.TransferParamMatrix;
-import org.apache.flink.api.java.tuple.Tuple7;
 
+import org.apache.flink.api.java.tuple.Tuple7;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 public class TCFGUtil {
