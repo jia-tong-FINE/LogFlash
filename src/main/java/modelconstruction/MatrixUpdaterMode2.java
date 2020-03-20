@@ -3,6 +3,7 @@ package modelconstruction;
 import TCFGmodel.TCFG;
 import TCFGmodel.TCFGUtil;
 import com.alibaba.fastjson.JSONObject;
+import faultdiagnosis.Anomaly;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.java.tuple.Tuple7;
@@ -13,7 +14,8 @@ import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
 
 import java.util.*;
-import java.util.concurrent.LinkedBlockingQueue;
+
+import static humanfeedback.SuspiciousRegionMonitor.*;
 
 
 public class MatrixUpdaterMode2 implements MatrixUpdater {
@@ -81,11 +83,22 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
             }
             TCFGUtil.counter counter = counterValueState.value();
             if (counter == null) {
-                counter = new TCFGUtil.counter();
+                counter = new TCFGUtil().new counter();
             }
             //Update transferParamMatrix in share memory
             if (counter.modResult(parameterTool.getInt("writeInterval")) == 0) {
                 try {
+                    //handle human feedback
+                    while (!tuningRegion.isEmpty()) {
+                        Anomaly anomaly = tuningRegion.pollAnomalyFromQueue();
+                        if (anomaly.getAnomalyType() == "Latency") {
+                            
+                        }
+                        if (anomaly.getAnomalyType() == "Redundancy") {
+
+                        }
+                    }
+                    //update share memory
                     int transferParamMatrixSize = parameterTool.getInt("transferParamMatrixSize");
                     int tcfgSize = parameterTool.getInt("TCFGSize");
                     String tempTransferParamMatrixStr = JSONObject.toJSONString(tempTransferParamMatrix);
@@ -96,9 +109,7 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
             }
             counterValueState.update(counter);
 
-            //Fault Diagosis Process defnition
-            TCFG tcfg = new TCFG();
-            tcfg.paramMatrix2TCFG(tempTransferParamMatrix,parameterTool.getLong("delta"));
+            int trainingFlag = parameterTool.getInt("trainingFlag");
 
             //TCFG Construction process
             List<String> priorEventIDList = tempTransferParamMatrix.getEventIDList();
@@ -107,12 +118,15 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
 
             while (iter.hasNext()) {
                 Tuple7 in = iter.next();
-                // Be careful with the templates BOOM!
-                if (!priorEventIDList.contains(in.f6)) {
+                //add new template into the matrix during training
+                if (trainingFlag == 1 && !priorEventIDList.contains(in.f6)) {
                     tempTransferParamMatrix.addNewTemplate((String)in.f6,(String)in.f4,parameterTool.getDouble("alpha"));
                 }
                 long inTime = Long.parseLong((String)in.f0);
-                tempList.add(in);
+                //add new template to matrix update process during training
+                if (trainingFlag == 1) {
+                    tempList.add(in);
+                }
                 tempList = TCFGUtil.deleteReplica(tempList);
                 tempList = new IndenpendencyFilter().filterIndependentNodes(tempList,tempTransferParamMatrix,slidingWindowStep,parameterTool.getLong("delta"));
                 if (inTime-context.window().getStart() > slidingWindowStep) {
@@ -123,9 +137,11 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
                         if (slidingWindowList.indexOf(tuple) == slidingWindowList.size()-1) {
                             break;
                         }
-                        tempTransferParamMatrix.updateTimeMatrix((String)in.f6,(String)tuple.f6,inTime- Long.parseLong((String)tuple.f0));
+                        //update the time matrix during training
+                        if (trainingFlag == 1) {
+                            tempTransferParamMatrix.updateTimeMatrix((String)in.f6,(String)tuple.f6,inTime- Long.parseLong((String)tuple.f0));
+                        }
                         double gradient = TCFGConstructer.calGradientForInfected(inTime, Long.parseLong((String)tuple.f0),tempTransferParamMatrix,slidingWindowList,slidingWindowStep,parameterTool.getLong("delta"));
-
                         if (gradient > parameterTool.getDouble("gradLimitation")) {
                             gradient = parameterTool.getDouble("gradLimitation");
                         }
@@ -136,9 +152,7 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
                             tempTransferParamMatrix.updateGradMatrix((String) in.f6, (String) tuple.f6, gradient);
                         }
                     }
-                    //end grad computation
                 }
-
             }
             //Start matrix update
             tempTransferParamMatrix.updateParamMatrix(parameterTool.getDouble("gamma"));

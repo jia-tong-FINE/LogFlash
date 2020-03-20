@@ -16,8 +16,8 @@ public class TuningRegion {
         anomalyQueue.offer(e);
     }
 
-    public void pollAnomalyFromQueue() {
-        anomalyQueue.poll();
+    public Anomaly pollAnomalyFromQueue() {
+        return anomalyQueue.poll();
     }
 
     public Anomaly showAnomalyFromQueue() {

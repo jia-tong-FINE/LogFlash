@@ -11,7 +11,9 @@ public class TCFGConstructor {
 
         @Override
         public void process(String s, Context context, Iterable<Tuple7<String, String, String, String, String, String, String>> elements, Collector<String> out) throws Exception {
-
+            //Fault Diagosis Process defnition
+            TCFG tcfg = new TCFG();
+            //tcfg.paramMatrix2TCFG(tempTransferParamMatrix,parameterTool.getLong("delta"));
         }
     }
 }

@@ -3,6 +3,7 @@ package faultdiagnosis;
 import TCFGmodel.TCFG;
 import TCFGmodel.TCFGUtil;
 import com.alibaba.fastjson.JSONObject;
+import humanfeedback.SuspiciousRegionMonitor;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.java.tuple.Tuple7;
@@ -47,7 +48,7 @@ public class FaultDiagnosisMode2 implements FaultDiagnosis{
             }
             TCFGUtil.counter counter = counterValueState.value();
             if (counter == null) {
-                counter = new TCFGUtil.counter();
+                counter = new TCFGUtil().new counter();
             }
 
             //Update tempTcfgValueState from share memory
@@ -78,6 +79,13 @@ public class FaultDiagnosisMode2 implements FaultDiagnosis{
 
                     Anomaly anomaly = faultDiagnosis.faultDiagnosisProcess(tempTcfgValueState, slidingWindowList);
                     if (anomaly != null) {
+                        //set anomaly to Suspicious State
+                        if (anomaly.getAnomalyType() == "Latency") {
+                            SuspiciousRegionMonitor.suspiciousRegion.latencyAnomalyQueue.offer(anomaly);
+                        }
+                        if (anomaly.getAnomalyType() == "Redundancy") {
+                            SuspiciousRegionMonitor.suspiciousRegion.redundancyAnomalyQueue.offer(anomaly);
+                        }
                         //store and output anomalies
                     }
                 }

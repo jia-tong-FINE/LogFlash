@@ -2,6 +2,7 @@ package TCFGmodel;
 
 
 
+import com.alibaba.fastjson.JSONObject;
 import org.apache.flink.api.java.tuple.Tuple7;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -47,20 +48,18 @@ public class TCFGUtil {
     }
 
 
-    public static class counter {
+    public class counter {
         int count;
-        int interval;
 
         public counter () {
             TCFGUtil tcfgUtil = new TCFGUtil();
             Properties properties = tcfgUtil.getConfig();
             this.count = 0;
-            this.interval = Integer.valueOf(properties.getProperty("interval"));
         }
 
         public int modResult(int interval) {
-            count = count%interval;
             count ++;
+            count = count%interval;
             return count;
         }
     }
@@ -95,12 +94,18 @@ public class TCFGUtil {
         return sum*e;
     }
 
-//    public TCFG getTCFGFromMemory() {
-//        Properties properties = getConfig();
-//        int tcfgSize = Long.parseLong(properties.getProperty("TCFGSize"));
-//        byte[] b = new byte[tcfgSize];
-//        TCFG.sm.read(1, tcfgSize, b);
-//        return (JSONObject.parseObject(b, TCFG.class));
-//    }
+    public TCFG getTCFGFromMemory() {
+        Properties properties = getConfig();
+        int tcfgSize = Integer.valueOf(properties.getProperty("TCFGSize"));
+        byte[] b = new byte[tcfgSize];
+        TCFG.sm.read(1, tcfgSize+1, b);
+        return (JSONObject.parseObject(b, TCFG.class));
+    }
+    public void setTCFGInMemory(TCFG tcfg) throws Exception{
+        Properties properties = getConfig();
+        int tcfgSize = Integer.valueOf(properties.getProperty("TCFGSize"));
+        String tcfgStr = JSONObject.toJSONString(tcfg);
+        TCFG.sm.write(1, tcfgSize+1, tcfgStr.getBytes("UTF-8"));
+    }
 
 }
