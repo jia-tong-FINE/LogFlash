@@ -3,12 +3,17 @@ package TCFGmodel;
 
 
 import com.alibaba.fastjson.JSONObject;
+import humanfeedback.SuspiciousRegionMonitor;
+import humanfeedback.TuningRegion;
+import modelconstruction.TransferParamMatrix;
 import org.apache.flink.api.java.tuple.Tuple7;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import static humanfeedback.SuspiciousRegionMonitor.tuningRegion;
 
 public class TCFGUtil {
 
@@ -101,11 +106,44 @@ public class TCFGUtil {
         TCFG.sm.read(1, tcfgSize+1, b);
         return (JSONObject.parseObject(b, TCFG.class));
     }
-    public void setTCFGInMemory(TCFG tcfg) throws Exception{
+    public void saveTCFGInMemory(TCFG tcfg) throws Exception{
         Properties properties = getConfig();
         int tcfgSize = Integer.valueOf(properties.getProperty("TCFGSize"));
         String tcfgStr = JSONObject.toJSONString(tcfg);
         TCFG.sm.write(1, tcfgSize+1, tcfgStr.getBytes("UTF-8"));
+    }
+    public TransferParamMatrix getMatrixFromMemory() {
+        Properties properties = getConfig();
+        int tcfgSize = Integer.valueOf(properties.getProperty("TCFGSize"));
+        int transferParamMatrixSize = Integer.valueOf(properties.getProperty("transferParamMatrixSize"));
+        byte[] b = new byte[transferParamMatrixSize];
+        TCFG.sm.read(tcfgSize+1, transferParamMatrixSize+tcfgSize+1, b);
+        TransferParamMatrix transferParamMatrix = JSONObject.parseObject(b, TransferParamMatrix.class);
+        return transferParamMatrix;
+    }
+    public void saveMatrixInMemory(TransferParamMatrix transferParamMatrix) throws Exception{
+        Properties properties = getConfig();
+        int tcfgSize = Integer.valueOf(properties.getProperty("TCFGSize"));
+        int transferParamMatrixSize = Integer.valueOf(properties.getProperty("transferParamMatrixSize"));
+        String matrixStr = JSONObject.toJSONString(transferParamMatrix);
+        TCFG.sm.write(1+tcfgSize, transferParamMatrixSize+tcfgSize+1, matrixStr.getBytes("UTF-8"));
+    }
+    public void getTuningRegionFromMemory() {
+        Properties properties = getConfig();
+        int tcfgSize = Integer.valueOf(properties.getProperty("TCFGSize"));
+        int transferParamMatrixSize = Integer.valueOf(properties.getProperty("transferParamMatrixSize"));
+        int tuningRegionSize = Integer.valueOf(properties.getProperty("tuningRegionSize"));
+        byte[] b = new byte[transferParamMatrixSize];
+        TCFG.sm.read(transferParamMatrixSize+tcfgSize+1, tuningRegionSize+transferParamMatrixSize+tcfgSize+1, b);
+        tuningRegion = JSONObject.parseObject(b, TuningRegion.class);
+    }
+    public void saveTuningRegionInMemory() throws Exception{
+        Properties properties = getConfig();
+        int tcfgSize = Integer.valueOf(properties.getProperty("TCFGSize"));
+        int transferParamMatrixSize = Integer.valueOf(properties.getProperty("transferParamMatrixSize"));
+        int tuningRegionSize = Integer.valueOf(properties.getProperty("tuningRegionSize"));
+        String tuningRegionStr = JSONObject.toJSONString(tuningRegion);
+        TCFG.sm.write(1+tcfgSize+transferParamMatrixSize, tuningRegionSize+transferParamMatrixSize+tcfgSize+1, tuningRegionStr.getBytes("UTF-8"));
     }
 
 }

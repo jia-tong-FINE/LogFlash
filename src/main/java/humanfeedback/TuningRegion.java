@@ -1,5 +1,6 @@
 package humanfeedback;
 
+import TCFGmodel.TCFGUtil;
 import faultdiagnosis.Anomaly;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ public class TuningRegion {
 
     Queue<Anomaly> anomalyQueue = new LinkedList<>();
     List<String> eventWhiteList = new ArrayList<>();
+
 
     public void addAnomalyToQueue(Anomaly e) {
         anomalyQueue.offer(e);
@@ -34,6 +36,10 @@ public class TuningRegion {
 
     public boolean isEmpty() {
         return anomalyQueue.isEmpty();
+    }
+
+    public List<String> getEventWhiteList() {
+        return eventWhiteList;
     }
 
 }

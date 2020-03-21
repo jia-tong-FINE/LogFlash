@@ -49,15 +49,14 @@ public class FaultDiagnosisMode2 implements FaultDiagnosis{
             TCFGUtil.counter counter = counterValueState.value();
             if (counter == null) {
                 counter = new TCFGUtil().new counter();
+                counterValueState.update(counter);
             }
 
             //Update tempTcfgValueState from share memory
-            if (counter.modResult(parameterTool.getInt("readInterval")) == 0) {
+            if (counter.modResult(parameterTool.getInt("TCFGReadInterval")) == 0) {
                 try {
-                    int tcfgSize = parameterTool.getInt("TCFGSize");
-                    byte[] b = new byte[tcfgSize];
-                    TCFG.sm.read(0, tcfgSize, b);
-                    tempTcfgValueState = JSONObject.parseObject(b, TCFG.class);
+                    TCFGUtil tcfgUtil = new TCFGUtil();
+                    tempTcfgValueState = tcfgUtil.getTCFGFromMemory();
                     tcfgValueState.update(tempTcfgValueState);
                 } catch (Exception e) {
                     System.out.println("serialization failure");

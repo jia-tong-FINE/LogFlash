@@ -1,10 +1,12 @@
 package modelconstruction;
 
+import TCFGmodel.TCFG;
+import com.alibaba.fastjson.JSONObject;
+
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static workflow.WatermarkGenerator.getConfig;
 
 //Transfer Parameter Matrix
 public class TransferParamMatrix implements Serializable {

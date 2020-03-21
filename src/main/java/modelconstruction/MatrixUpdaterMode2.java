@@ -86,7 +86,7 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
                 counter = new TCFGUtil().new counter();
             }
             //Update transferParamMatrix in share memory
-            if (counter.modResult(parameterTool.getInt("writeInterval")) == 0) {
+            if (counter.modResult(parameterTool.getInt("matrixWriteInterval")) == 0) {
                 try {
                     //handle human feedback
                     List<String> priorEventIDList = tempTransferParamMatrix.getEventIDList();
@@ -106,10 +106,8 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
                         }
                     }
                     //update share memory
-                    int transferParamMatrixSize = parameterTool.getInt("transferParamMatrixSize");
-                    int tcfgSize = parameterTool.getInt("TCFGSize");
-                    String tempTransferParamMatrixStr = JSONObject.toJSONString(tempTransferParamMatrix);
-                    TCFG.sm.write(tcfgSize, transferParamMatrixSize, tempTransferParamMatrixStr.getBytes("UTF-8"));
+                    TCFGUtil tcfgUtil = new TCFGUtil();
+                    tcfgUtil.saveMatrixInMemory(tempTransferParamMatrix);
                 } catch (Exception e) {
                     System.out.println("serialization failure");
                 }

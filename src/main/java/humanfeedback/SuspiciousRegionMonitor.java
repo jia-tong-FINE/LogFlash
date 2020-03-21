@@ -20,6 +20,10 @@ public class SuspiciousRegionMonitor {
     public static FeedBackFalseAlarms feedBackFalseAlarms = new FeedBackFalseAlarms();
     public static SuspiciousRegion suspiciousRegion = new SuspiciousRegion();
     public static TuningRegion tuningRegion = new TuningRegion();
+    public SuspiciousRegionMonitor() {
+        TCFGUtil tcfgUtil = new TCFGUtil();
+        tcfgUtil.getTuningRegionFromMemory();
+    }
 
     public static class SuspiciousRegionMonitoring extends ProcessWindowFunction<Tuple7<String, String, String, String, String, String, String>, String, String, TimeWindow> {
 
@@ -32,6 +36,7 @@ public class SuspiciousRegionMonitor {
             TCFGUtil.counter counter = counterValueState.value();
             if (counter == null) {
                 counter = new TCFGUtil().new counter();
+                counterValueState.update(counter);
             }
 
             if (counter.modResult(parameterTool.getInt("falseAlarmsProcessingInterval")) == 0) {
@@ -100,8 +105,11 @@ public class SuspiciousRegionMonitor {
                         }
                     }
                 }
+                TCFGUtil tcfgUtil = new TCFGUtil();
+                tcfgUtil.saveTuningRegionInMemory();
+                counterValueState.update(counter);
             }
-            counterValueState.update(counter);
+
         }
 
         @Override
