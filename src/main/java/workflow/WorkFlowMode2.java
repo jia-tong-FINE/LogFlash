@@ -3,6 +3,7 @@ package workflow;
 import TCFGmodel.ShareMemory;
 import TCFGmodel.TCFG;
 import TCFGmodel.TCFGConstructor;
+import TCFGmodel.TCFGUtil;
 import faultdiagnosis.FaultDiagnosisMode2;
 import humanfeedback.SuspiciousRegionMonitor;
 import modelconstruction.MatrixUpdaterMode2;
@@ -57,10 +58,11 @@ public class WorkFlowMode2 implements WorkFlow{
                 env.execute();
                 break;
             case "2":
-
+                TCFGUtil tcfgUtil = new TCFGUtil();
+                tcfgUtil.initiateShareMemory();
                 String logdata2 = "adc";
                 String logName2 = "adc-06-04-2019-2";
-                String input_dir2 = String.format("src/main/resources/data/%s/raw", logdata2);
+                String input_dir2 = String.format("src/main/resources/%s/raw", logdata2);
                 StreamExecutionEnvironment env2 = StreamExecutionEnvironment.getExecutionEnvironment().setParallelism(1);
                 env2.getConfig().setGlobalJobParameters(parameter);
                 env2.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
@@ -76,6 +78,12 @@ public class WorkFlowMode2 implements WorkFlow{
                         .keyBy(t -> t.f2)
                         .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))),Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
                         .process(new MatrixUpdaterMode2.TransferParamMatrixUpdate());
+                //Human Feedback-aware Tuning
+                templateStream
+                        .assignTimestampsAndWatermarks(new WatermarkGenerator.BoundedOutOfOrdernessGenerator())
+                        .keyBy(t -> t.f2)
+                        .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))),Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
+                        .process(new SuspiciousRegionMonitor.SuspiciousRegionMonitoring());
                 //Fault Diagnosis
                 templateStream
                         .assignTimestampsAndWatermarks(new WatermarkGenerator.BoundedOutOfOrdernessGenerator())
@@ -88,12 +96,6 @@ public class WorkFlowMode2 implements WorkFlow{
                         .keyBy(t -> t.f2)
                         .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))),Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
                         .process(new TCFGConstructor.TCFGConstructionProcess());
-                //Human Feedback-aware Tuning
-                templateStream
-                        .assignTimestampsAndWatermarks(new WatermarkGenerator.BoundedOutOfOrdernessGenerator())
-                        .keyBy(t -> t.f2)
-                        .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))),Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
-                        .process(new SuspiciousRegionMonitor.SuspiciousRegionMonitoring());
                 env2.execute();
                 break;
 

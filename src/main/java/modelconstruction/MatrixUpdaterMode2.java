@@ -109,7 +109,7 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
                     TCFGUtil tcfgUtil = new TCFGUtil();
                     tcfgUtil.saveMatrixInMemory(tempTransferParamMatrix);
                 } catch (Exception e) {
-                    System.out.println("serialization failure");
+                    System.out.println("matrix serialization failure:" + e);
                 }
             }
             counterValueState.update(counter);

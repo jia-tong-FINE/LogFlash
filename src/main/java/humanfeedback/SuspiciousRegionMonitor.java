@@ -20,7 +20,7 @@ public class SuspiciousRegionMonitor {
     public static FeedBackFalseAlarms feedBackFalseAlarms = new FeedBackFalseAlarms();
     public static SuspiciousRegion suspiciousRegion = new SuspiciousRegion();
     public static TuningRegion tuningRegion = new TuningRegion();
-    public SuspiciousRegionMonitor() {
+    public SuspiciousRegionMonitor() throws Exception{
         TCFGUtil tcfgUtil = new TCFGUtil();
         tcfgUtil.getTuningRegionFromMemory();
     }

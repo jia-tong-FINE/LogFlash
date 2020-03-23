@@ -59,7 +59,7 @@ public class FaultDiagnosisMode2 implements FaultDiagnosis{
                     tempTcfgValueState = tcfgUtil.getTCFGFromMemory();
                     tcfgValueState.update(tempTcfgValueState);
                 } catch (Exception e) {
-                    System.out.println("serialization failure");
+                    System.out.println("get TCFG failure: " + e);
                 }
             }
             counterValueState.update(counter);
