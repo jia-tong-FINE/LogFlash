@@ -148,7 +148,7 @@ public class TCFGUtil {
         int tuningRegionSize = Integer.valueOf(properties.getProperty("tuningRegionSize"));
         byte[] b = new byte[tuningRegionSize];
         TCFG.sm.read(transferParamMatrixSize+tcfgSize+1, tuningRegionSize, b);
-        tuningRegion = JSONObject.parseObject(new String(b,"utf-8"), TuningRegion.class);
+        tuningRegion = JSONObject.parseObject(new String(b,"utf-8").trim(), TuningRegion.class);
     }
     public void saveTuningRegionInMemory() throws Exception{
         Properties properties = getConfig();
