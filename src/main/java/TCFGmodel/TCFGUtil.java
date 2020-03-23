@@ -8,9 +8,7 @@ import modelconstruction.TransferParamMatrix;
 import org.apache.flink.api.java.tuple.Tuple7;
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 
 import static humanfeedback.SuspiciousRegionMonitor.tuningRegion;
@@ -102,9 +100,11 @@ public class TCFGUtil {
     public void initiateShareMemory() throws Exception {
         TransferParamMatrix tpm = new TransferParamMatrix();
         TCFG tcfg = new TCFG();
+        Map<String, String> templateUpdateRegion = new HashMap<>();
         saveTCFGInMemory(tcfg);
         saveMatrixInMemory(tpm);
         saveTuningRegionInMemory();
+        saveTemplateUpdateRegion(templateUpdateRegion);
     }
 
     public TCFG getTCFGFromMemory() throws Exception{
@@ -159,4 +159,24 @@ public class TCFGUtil {
         TCFG.sm.write(1+tcfgSize+transferParamMatrixSize, tuningRegionSize, tuningRegionStr.getBytes("UTF-8"));
     }
 
+    public Map<String, String> getTemplateUpdateRegion() {
+        Properties properties = getConfig();
+        int tcfgSize = Integer.parseInt(properties.getProperty("TCFGSize"));
+        int transferParamMatrixSize = Integer.parseInt(properties.getProperty("transferParamMatrixSize"));
+        int tuningRegionSize = Integer.parseInt(properties.getProperty("tuningRegionSize"));
+        int templateUpdateRegionSize = Integer.parseInt(properties.getProperty("templateUpdateRegionSize"));
+        byte[] b = new byte[templateUpdateRegionSize];
+        TCFG.sm.read(1+tcfgSize+transferParamMatrixSize+tuningRegionSize, templateUpdateRegionSize, b);
+        return JSONObject.parseObject(b, Map.class);
+    }
+
+    public void saveTemplateUpdateRegion(Map<String, String> templateUpdateRegion) throws Exception{
+        Properties properties = getConfig();
+        int tcfgSize = Integer.parseInt(properties.getProperty("TCFGSize"));
+        int transferParamMatrixSize = Integer.parseInt(properties.getProperty("transferParamMatrixSize"));
+        int tuningRegionSize = Integer.parseInt(properties.getProperty("tuningRegionSize"));
+        int templateUpdateRegionSize = Integer.parseInt(properties.getProperty("templateUpdateRegionSize"));
+        String str = JSONObject.toJSONString(templateUpdateRegion);
+        TCFG.sm.write(1+tcfgSize+transferParamMatrixSize+tuningRegionSize, templateUpdateRegionSize, str.getBytes("UTF-8"));
+    }
 }

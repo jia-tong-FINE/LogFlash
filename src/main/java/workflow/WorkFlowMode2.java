@@ -9,7 +9,6 @@ import humanfeedback.SuspiciousRegionMonitor;
 import modelconstruction.MatrixUpdaterMode2;
 import org.apache.flink.api.java.tuple.Tuple7;
 import org.apache.flink.streaming.api.datastream.DataStream;
-import templatemining.FlinkDrain;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.utils.ParameterTool;
@@ -18,6 +17,7 @@ import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.log4j.Logger;
+import templatemining.Parse;
 
 import java.io.File;
 
@@ -46,7 +46,7 @@ public class WorkFlowMode2 implements WorkFlow{
                 dataStream.map(line -> Tuple2.of(logdata, line))
                         .returns(Types.TUPLE(Types.STRING, Types.STRING))
                         .keyBy(t -> t.f0)
-                        .process(new FlinkDrain.Parse())
+                        .process(new Parse())
                         .assignTimestampsAndWatermarks(new WatermarkGenerator.BoundedOutOfOrdernessGenerator())
                         .keyBy(t -> t.f2)
                         .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("timeWindow"))))
@@ -71,7 +71,7 @@ public class WorkFlowMode2 implements WorkFlow{
                 DataStream<Tuple7<String,String,String,String,String,String,String>> templateStream= dataStream2.map(line -> Tuple2.of(logdata2, line))
                         .returns(Types.TUPLE(Types.STRING, Types.STRING))
                         .keyBy(t -> t.f0)
-                        .process(new FlinkDrain.Parse());
+                        .process(new Parse());
                 //ParamMatrix Update
                 templateStream
                         .assignTimestampsAndWatermarks(new WatermarkGenerator.BoundedOutOfOrdernessGenerator())
