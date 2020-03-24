@@ -18,7 +18,6 @@ import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.rabbitmq.RMQSource;
 import org.apache.flink.streaming.connectors.rabbitmq.common.RMQConnectionConfig;
 import org.apache.log4j.Logger;
-import templatemining.FlinkDrain;
 import workflow.WatermarkGenerator;
 
 import java.io.File;

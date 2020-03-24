@@ -120,6 +120,7 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
             counterValueState.update(counter);
 
             int trainingFlag = parameterTool.getInt("trainingFlag");
+            //添加一个线程监控matrix的Frobenius norm，如果该数值保持稳定则将trainingFlag调整为0
 
             //TCFG Construction process
             List<String> priorEventIDList = tempTransferParamMatrix.getEventIDList();
