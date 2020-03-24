@@ -111,7 +111,7 @@ public class Entrance {
         String sp = parameter.get("shareMemoryFilePath");
         TCFG.sm = new ShareMemory(sp, "TCFG");
         String mode = parameter.get("workFlowMode");
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment().setParallelism(1);
         env.getConfig().setGlobalJobParameters(parameter);
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
         DataStreamSource<String> dataStream = getDataStream(env, log, parameter);
@@ -121,6 +121,7 @@ public class Entrance {
                 break;
             case "1":
                 workFlow1(env, dataStream, parameter);
+                break;
             case "2":
                 workFlow2(env, dataStream, parameter);
         }
