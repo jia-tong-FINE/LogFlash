@@ -81,9 +81,13 @@ public class TCFG {
                 double alphaji = paramMatrix.get(key1).get(key2);
                 double transitionProb = tcfgUtil.calDefinitIntegral(delta, 2*delta, 100, alphaji, delta);
                 if (transitionProb > 0.1) {
+                    TCFG.Node in_node_edge = new TCFG.Node();
+                    in_node.node_id = key1;
+                    TCFG.Node out_node_edge = new TCFG.Node();
+                    out_node.node_id = key2;
                     TCFG.Edge edge = new TCFG.Edge();
-                    edge.in_node = in_node;
-                    edge.out_node = out_node;
+                    edge.in_node = in_node_edge;
+                    edge.out_node = out_node_edge;
                     edge.time_weight = timeMatrix.get(in_node.node_id).get(out_node.node_id);
                     edges.add(edge);
                 }

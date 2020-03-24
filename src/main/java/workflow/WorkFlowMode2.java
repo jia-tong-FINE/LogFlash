@@ -3,12 +3,12 @@ package workflow;
 import TCFGmodel.ShareMemory;
 import TCFGmodel.TCFG;
 import TCFGmodel.TCFGConstructor;
+import TCFGmodel.TCFGUtil;
 import faultdiagnosis.FaultDiagnosisMode2;
 import humanfeedback.SuspiciousRegionMonitor;
 import modelconstruction.MatrixUpdaterMode2;
 import org.apache.flink.api.java.tuple.Tuple7;
 import org.apache.flink.streaming.api.datastream.DataStream;
-import templatemining.FlinkDrain;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.utils.ParameterTool;
@@ -17,6 +17,7 @@ import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.log4j.Logger;
+import templatemining.Parse;
 
 import java.io.File;
 
@@ -45,7 +46,7 @@ public class WorkFlowMode2 implements WorkFlow{
                 dataStream.map(line -> Tuple2.of(logdata, line))
                         .returns(Types.TUPLE(Types.STRING, Types.STRING))
                         .keyBy(t -> t.f0)
-                        .process(new FlinkDrain.Parse())
+                        .process(new Parse())
                         .assignTimestampsAndWatermarks(new WatermarkGenerator.BoundedOutOfOrdernessGenerator())
                         .keyBy(t -> t.f2)
                         .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("timeWindow"))))
@@ -57,10 +58,11 @@ public class WorkFlowMode2 implements WorkFlow{
                 env.execute();
                 break;
             case "2":
-
+                TCFGUtil tcfgUtil = new TCFGUtil();
+                tcfgUtil.initiateShareMemory();
                 String logdata2 = "adc";
                 String logName2 = "adc-06-04-2019-2";
-                String input_dir2 = String.format("src/main/resources/data/%s/raw", logdata2);
+                String input_dir2 = String.format("src/main/resources/%s/raw", logdata2);
                 StreamExecutionEnvironment env2 = StreamExecutionEnvironment.getExecutionEnvironment().setParallelism(1);
                 env2.getConfig().setGlobalJobParameters(parameter);
                 env2.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
@@ -69,13 +71,19 @@ public class WorkFlowMode2 implements WorkFlow{
                 DataStream<Tuple7<String,String,String,String,String,String,String>> templateStream= dataStream2.map(line -> Tuple2.of(logdata2, line))
                         .returns(Types.TUPLE(Types.STRING, Types.STRING))
                         .keyBy(t -> t.f0)
-                        .process(new FlinkDrain.Parse());
+                        .process(new Parse());
                 //ParamMatrix Update
                 templateStream
                         .assignTimestampsAndWatermarks(new WatermarkGenerator.BoundedOutOfOrdernessGenerator())
                         .keyBy(t -> t.f2)
                         .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))),Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
                         .process(new MatrixUpdaterMode2.TransferParamMatrixUpdate());
+                //Human Feedback-aware Tuning
+                templateStream
+                        .assignTimestampsAndWatermarks(new WatermarkGenerator.BoundedOutOfOrdernessGenerator())
+                        .keyBy(t -> t.f2)
+                        .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))),Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
+                        .process(new SuspiciousRegionMonitor.SuspiciousRegionMonitoring());
                 //Fault Diagnosis
                 templateStream
                         .assignTimestampsAndWatermarks(new WatermarkGenerator.BoundedOutOfOrdernessGenerator())
@@ -88,12 +96,6 @@ public class WorkFlowMode2 implements WorkFlow{
                         .keyBy(t -> t.f2)
                         .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))),Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
                         .process(new TCFGConstructor.TCFGConstructionProcess());
-                //Human Feedback-aware Tuning
-                templateStream
-                        .assignTimestampsAndWatermarks(new WatermarkGenerator.BoundedOutOfOrdernessGenerator())
-                        .keyBy(t -> t.f2)
-                        .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))),Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
-                        .process(new SuspiciousRegionMonitor.SuspiciousRegionMonitoring());
                 env2.execute();
                 break;
 

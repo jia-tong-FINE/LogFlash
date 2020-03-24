@@ -12,9 +12,10 @@ import java.util.Properties;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+//import jdk.internal.ref.Cleaner;
+import modelconstruction.TransferParamMatrix;
 import org.apache.flink.api.java.utils.ParameterTool;
-
-
+//import sun.nio.ch.DirectBuffer;
 
 
 /**
@@ -92,9 +93,15 @@ public class ShareMemory {
             //获取此通道的文件给定区域上的锁定。
             fl = fc.lock(ps, len, false);
             if (fl != null) {
-
+                byte[] b = new byte[len];
+                for (int i=0;i<len;i++) {
+                    if (i<buff.length) {
+                        b[i] = buff[i];
+                    }else b[i] = 0;
+                }
+                mapBuf.clear();
                 mapBuf.position(ps);
-                ByteBuffer bf1 = ByteBuffer.wrap(buff);
+                ByteBuffer bf1 = ByteBuffer.wrap(b);
                 mapBuf.put(bf1);
                 //释放此锁定。
                 fl.release();
@@ -245,28 +252,28 @@ public class ShareMemory {
         write(1, 1, bb);
 
     }
+//    private void unmap() {
+//        Cleaner cl = ((DirectBuffer)TCFG.sm).cleaner();
+//        if (cl != null)
+//            cl.clean();
+//    }
 
     public static void main(String args[]) throws Exception{
-        ParameterTool parameter = ParameterTool.fromPropertiesFile("src/main/resources/config.properties");
-        String sp = parameter.get("shareMemoryFilePath");
-        ShareMemory sm = new ShareMemory(sp,"test");
-        TCFG testTCFG = new TCFG();
-        String str = "中文测试";
-        //sm.write(0, 40, str.getBytes("UTF-8"));
-        byte[] b = new byte[40];
-        sm.read(0, 40, b);
-        System.out.println(new String(b,"UTF-8"));
-
-//        int tcfgSize = parameter.getInt("TCFGSize");
-//        byte[] b = new byte[tcfgSize];
-//        //String testTCFGStr = JSONObject.toJSONString(testTCFG);
-//        //sm.write(0, 40, testTCFGStr.getBytes("UTF-8"));
-//        sm.read(0, tcfgSize, b);
-////        String tcfgString = JSONArray.toJSONString(b);
-//        TCFG tempTcfgValueState = JSONObject.parseObject(b,TCFG.class);
-//        System.out.println(tempTcfgValueState.getEdges());
-//        JSON.parse(new String(b,"UTF-8"));
-//        tcfgValueState.update(tempTcfgValueState);
+//        ParameterTool parameter = ParameterTool.fromPropertiesFile("src/main/resources/config.properties");
+//        String sp = parameter.get("shareMemoryFilePath");
+//        TCFG.sm = new ShareMemory(sp,"test");
+//        String str = "{test}";
+//        TCFG.sm.write(2,110,str.getBytes("utf-8"));
+//        TCFG.sm.write(0,110,str.getBytes("utf-8"));
+//
+//        byte[] b = new byte[110];
+//        TCFG.sm.read(0, 110, b);
+//        System.out.println(b.length);
+//        System.out.println("TCFG:" + new String(b,"utf-8").trim());
+//        String s = " ";
+//        System.out.println(s.getBytes("utf-8").length);
+//        TCFG tcfg = JSONObject.parseObject(new String(b,"utf-8"), TCFG.class);
     }
+
 }
 

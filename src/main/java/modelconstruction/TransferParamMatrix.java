@@ -17,7 +17,7 @@ public class TransferParamMatrix implements Serializable {
     private Map<String, Map<String, Double>> gradMatrix;
     private Map<String, Map<String, Long>> timeMatrix;
 
-    TransferParamMatrix() {
+    public TransferParamMatrix() {
         eventIDList = new ArrayList<>();
         eventIDandContent = new HashMap<>();
         paramMatrix = new HashMap<>();
