@@ -2,7 +2,9 @@ package dao;
 
 import faultdiagnosis.Anomaly;
 import org.apache.flink.api.java.tuple.Tuple7;
+import org.apache.flink.api.java.utils.ParameterTool;
 
+import java.io.IOException;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -12,11 +14,16 @@ public class MysqlUtil {
 
     // MySQL 8.0 以上版本 - JDBC 驱动名及数据库 URL
     static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
-    static final String DB_URL = "jdbc:mysql://localhost:3306/anomalies?useSSL=false&serverTimezone=UTC";
+    static ParameterTool parameter;
 
-    // 数据库的用户名与密码
-    static final String USER = "root";
-    static final String PASS = "jt1118961";
+    static {
+        try {
+            parameter = ParameterTool.fromPropertiesFile("src/main/resources/config.properties");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private String StamptoTime(String time, String pattern) {
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
@@ -25,16 +32,41 @@ public class MysqlUtil {
         return time;
     }
 
-    public void insertAnomaly(Anomaly anomaly) {
+    public void createTable() throws Exception {
+        Class.forName(JDBC_DRIVER);
+        Connection dbConnection = DriverManager.getConnection(parameter.get("connectionString"), parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
+        String createTableSQL = "CREATE TABLE anomaly_log("
+                + "id INT(11) PRIMARY KEY NOT NULL AUTO_INCREMENT"
+                + "time VARCHAR(100) NOT NULL, "
+                + "unixtime VARCHAR(15) NOT NULL, "
+                + "level VARCHAR(20), "
+                + "component VARCHAR(500), "
+                + "content VARCHAR(3000), "
+                + "template VARCHAR(3000), "
+                + "paramlist VARCHAR(3000), "
+                + "eventid VARCHAR(200), "
+                + "anomalylogs TEXT, "
+                + "anomalyrequest TEXT, "
+                + "anomalywindow VARCHAR(200), "
+                + "anomalytype VARCHAR(10), "
+                + "anomalytemplates VARCHAR(500), "
+                + "logsequence_json TEXT"
+                + ")";
+        PreparedStatement preparedStatement = dbConnection.prepareStatement(createTableSQL);
+        preparedStatement.executeUpdate();
+        preparedStatement.close();
+        dbConnection.close();
+    }
 
+    public void insertAnomaly(Anomaly anomaly) {
         Connection conn = null;
         Statement stmt = null;
         PreparedStatement ps = null;
-        try{
+        try {
             // 注册 JDBC 驱动
             Class.forName(JDBC_DRIVER);
             // 打开链接
-            conn = DriverManager.getConnection(DB_URL,USER,PASS);
+            conn = DriverManager.getConnection(parameter.get("connectionString"), parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
             // 执行查询
             stmt = conn.createStatement();
             String sql = "insert into anomaly_log (time,unixtime,level,component,content,template,paramlist,eventid,anomalylogs,anomalyrequest,anomalywindow,anomalytype,anomalytemplates) values(?,?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -108,7 +140,7 @@ public class MysqlUtil {
             // 注册 JDBC 驱动
             Class.forName(JDBC_DRIVER);
             // 打开链接
-            conn = DriverManager.getConnection(DB_URL,USER,PASS);
+            conn = DriverManager.getConnection(parameter.get("connectionString"), parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
             // 执行查询
             stmt = conn.createStatement();
             String sql = "SELECT * FROM anomaly WHERE id = ?";
@@ -146,7 +178,7 @@ public class MysqlUtil {
             // 注册 JDBC 驱动
             Class.forName(JDBC_DRIVER);
             // 打开链接
-            conn = DriverManager.getConnection(DB_URL,USER,PASS);
+            conn = DriverManager.getConnection(parameter.get("connectionString"), parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
             // 执行查询
             stmt = conn.createStatement();
             String sql = "SELECT failure_type FROM injection_record_hadoop WHERE fault_id = ?";
@@ -185,7 +217,7 @@ public class MysqlUtil {
             // 注册 JDBC 驱动
             Class.forName(JDBC_DRIVER);
             // 打开链接
-            conn = DriverManager.getConnection(DB_URL,USER,PASS);
+            conn = DriverManager.getConnection(parameter.get("connectionString"), parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
             // 执行查询
             stmt = conn.createStatement();
             String sql = "SELECT activated FROM injection_record_hadoop WHERE fault_id = ?";
