@@ -16,7 +16,6 @@ import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
-import org.apache.log4j.Logger;
 import templatemining.Parse;
 
 import java.io.File;
@@ -25,13 +24,11 @@ public class WorkFlowMode2 implements WorkFlow{
 
     public static void main(String[] args) throws Exception {
 
-        final Logger log = Logger.getLogger(WorkFlowMode2.class);
         ParameterTool parameter = ParameterTool.fromPropertiesFile("src/main/resources/config.properties");
         String sp = parameter.get("shareMemoryFilePath");
         TCFG.sm = new ShareMemory(sp,"TCFG");
         switch (parameter.get("workFlowMode")) {
             default:
-                log.error("workFlowMode can only be 1 or 2");
                 break;
             case "1":
                 String logdata = "adc";
@@ -67,7 +64,7 @@ public class WorkFlowMode2 implements WorkFlow{
                 env2.getConfig().setGlobalJobParameters(parameter);
                 env2.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
                 DataStreamSource<String> dataStream2 = env2.readTextFile(input_dir2 + File.separator + logName2);
-
+                System.out.println(System.currentTimeMillis());
                 DataStream<Tuple7<String,String,String,String,String,String,String>> templateStream= dataStream2.map(line -> Tuple2.of(logdata2, line))
                         .returns(Types.TUPLE(Types.STRING, Types.STRING))
                         .keyBy(t -> t.f0)
@@ -97,6 +94,7 @@ public class WorkFlowMode2 implements WorkFlow{
                         .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))),Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
                         .process(new TCFGConstructor.TCFGConstructionProcess());
                 env2.execute();
+                System.out.println(System.currentTimeMillis());
                 break;
 
         }

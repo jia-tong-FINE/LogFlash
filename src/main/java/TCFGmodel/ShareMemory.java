@@ -9,14 +9,6 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.Properties;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-//import jdk.internal.ref.Cleaner;
-import modelconstruction.TransferParamMatrix;
-import org.apache.flink.api.java.utils.ParameterTool;
-//import sun.nio.ch.DirectBuffer;
-
 
 /**
  * 共享内存操作类
@@ -257,23 +249,6 @@ public class ShareMemory {
 //        if (cl != null)
 //            cl.clean();
 //    }
-
-    public static void main(String args[]) throws Exception{
-//        ParameterTool parameter = ParameterTool.fromPropertiesFile("src/main/resources/config.properties");
-//        String sp = parameter.get("shareMemoryFilePath");
-//        TCFG.sm = new ShareMemory(sp,"test");
-//        String str = "{test}";
-//        TCFG.sm.write(2,110,str.getBytes("utf-8"));
-//        TCFG.sm.write(0,110,str.getBytes("utf-8"));
-//
-//        byte[] b = new byte[110];
-//        TCFG.sm.read(0, 110, b);
-//        System.out.println(b.length);
-//        System.out.println("TCFG:" + new String(b,"utf-8").trim());
-//        String s = " ";
-//        System.out.println(s.getBytes("utf-8").length);
-//        TCFG tcfg = JSONObject.parseObject(new String(b,"utf-8"), TCFG.class);
-    }
 
 }
 

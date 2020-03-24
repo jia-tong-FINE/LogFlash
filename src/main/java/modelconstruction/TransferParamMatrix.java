@@ -1,12 +1,8 @@
 package modelconstruction;
 
-import TCFGmodel.TCFG;
-import com.alibaba.fastjson.JSONObject;
-
 import java.io.Serializable;
 import java.util.*;
 
-import static workflow.WatermarkGenerator.getConfig;
 
 //Transfer Parameter Matrix
 public class TransferParamMatrix implements Serializable {
@@ -124,6 +120,28 @@ public class TransferParamMatrix implements Serializable {
         paramMatrix.put(EventID,newParamColumn);
         gradMatrix.put(EventID,newGradColumn);
         timeMatrix.put(EventID,newTimeColumn);
+    }
+
+    //delete expired template
+    public void deleteExpiredTemplate(String EventID) {
+        if (!eventIDList.contains(EventID)) return;
+        Iterator<String> eventIDIt = eventIDList.iterator();
+        while (eventIDIt.hasNext()) {
+            if (eventIDIt.next() == EventID) {
+                eventIDIt.remove();
+            }
+        }
+        eventIDandContent.remove(EventID);
+        paramMatrix.remove(EventID);
+        gradMatrix.remove(EventID);
+        timeMatrix.remove(EventID);
+
+        for (String inNode: paramMatrix.keySet()) {
+            paramMatrix.get(inNode).remove(EventID);
+            gradMatrix.get(inNode).remove(EventID);
+            timeMatrix.get(inNode).remove(EventID);
+        }
+
     }
 
     public void decay(double beta) {

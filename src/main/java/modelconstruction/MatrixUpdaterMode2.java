@@ -1,8 +1,6 @@
 package modelconstruction;
 
-import TCFGmodel.TCFG;
 import TCFGmodel.TCFGUtil;
-import com.alibaba.fastjson.JSONObject;
 import faultdiagnosis.Anomaly;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
@@ -88,6 +86,14 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
             //Update transferParamMatrix in share memory
             if (counter.modResult(parameterTool.getInt("matrixWriteInterval")) == 0) {
                 try {
+                    TCFGUtil tcfgUtil = new TCFGUtil();
+                    //Delete expired templates
+                    Map<String,String> templateUpdateMap = tcfgUtil.getTemplateUpdateRegion();
+                    for (String key: templateUpdateMap.keySet()) {
+                        tempTransferParamMatrix.deleteExpiredTemplate(key);
+                    }
+                    Map<String,String> newTemplateUpdateMap = new HashMap<>();
+                    tcfgUtil.saveTemplateUpdateRegion(newTemplateUpdateMap);
                     //handle human feedback
                     List<String> priorEventIDList = tempTransferParamMatrix.getEventIDList();
                     while (!tuningRegion.isEmpty()) {
@@ -106,10 +112,9 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
                         }
                     }
                     //update share memory
-                    TCFGUtil tcfgUtil = new TCFGUtil();
                     tcfgUtil.saveMatrixInMemory(tempTransferParamMatrix);
                 } catch (Exception e) {
-                    System.out.println("matrix serialization failure:" + e);
+                    e.printStackTrace();
                 }
             }
             counterValueState.update(counter);

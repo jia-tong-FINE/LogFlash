@@ -1,7 +1,5 @@
 package TCFGmodel;
 
-
-
 import com.alibaba.fastjson.JSONObject;
 import humanfeedback.TuningRegion;
 import modelconstruction.TransferParamMatrix;
@@ -112,8 +110,6 @@ public class TCFGUtil {
         int tcfgSize = Integer.valueOf(properties.getProperty("TCFGSize"));
         byte[] b = new byte[tcfgSize];
         TCFG.sm.read(1, tcfgSize, b);
-        System.out.println(b.length);
-        System.out.println("TCFG:" + new String(b,"utf-8").trim());
         TCFG tcfg = JSONObject.parseObject(new String(b,"utf-8").trim(), TCFG.class);
         return tcfg;
     }
@@ -129,8 +125,6 @@ public class TCFGUtil {
         int transferParamMatrixSize = Integer.valueOf(properties.getProperty("transferParamMatrixSize"));
         byte[] b = new byte[transferParamMatrixSize];
         TCFG.sm.read(tcfgSize+1, transferParamMatrixSize, b);
-        System.out.println(b.length);
-        System.out.println("matrix: "+new String(b,"utf-8").trim());
         TransferParamMatrix transferParamMatrix = JSONObject.parseObject(new String(b,"utf-8").trim(), TransferParamMatrix.class);
         return transferParamMatrix;
     }
