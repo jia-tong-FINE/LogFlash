@@ -6,13 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-class Node implements Serializable {
-    private int depth;
-    private Map<String, Node> childD;
-    private List<LogCluster> childLG;
-    private String digitOrtoken;
+public class Node implements Serializable {
+    public int depth;
+    public Map<String, Node> childD;
+    public List<LogCluster> childLG;
+    public String digitOrtoken;
 
-    Node() {
+    public Node() {
         childD = new HashMap<>();
         childLG = new ArrayList<>();
         depth = 0;

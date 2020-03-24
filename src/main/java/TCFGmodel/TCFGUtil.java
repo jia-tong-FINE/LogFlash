@@ -1,5 +1,6 @@
 package TCFGmodel;
 
+import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import humanfeedback.TuningRegion;
 import modelconstruction.TransferParamMatrix;
@@ -7,7 +8,7 @@ import org.apache.flink.api.java.tuple.Tuple7;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.*;
-
+import templatemining.Node;
 
 import static humanfeedback.SuspiciousRegionMonitor.tuningRegion;
 
@@ -99,10 +100,17 @@ public class TCFGUtil {
         TransferParamMatrix tpm = new TransferParamMatrix();
         TCFG tcfg = new TCFG();
         Map<String, String> templateUpdateRegion = new HashMap<>();
+        Node rootNode;
         saveTCFGInMemory(tcfg);
         saveMatrixInMemory(tpm);
         saveTuningRegionInMemory();
         saveTemplateUpdateRegion(templateUpdateRegion);
+        try {
+            rootNode = getParseTreeRegion();
+        } catch (JSONException ignored){
+            rootNode = new Node();
+        }
+        saveParseTreeRegion(rootNode);
     }
 
     public TCFG getTCFGFromMemory() throws Exception{
@@ -172,5 +180,28 @@ public class TCFGUtil {
         int templateUpdateRegionSize = Integer.parseInt(properties.getProperty("templateUpdateRegionSize"));
         String str = JSONObject.toJSONString(templateUpdateRegion);
         TCFG.sm.write(1+tcfgSize+transferParamMatrixSize+tuningRegionSize, templateUpdateRegionSize, str.getBytes("UTF-8"));
+    }
+
+    public Node getParseTreeRegion() throws JSONException {
+        Properties properties = getConfig();
+        int tcfgSize = Integer.parseInt(properties.getProperty("TCFGSize"));
+        int transferParamMatrixSize = Integer.parseInt(properties.getProperty("transferParamMatrixSize"));
+        int tuningRegionSize = Integer.parseInt(properties.getProperty("tuningRegionSize"));
+        int templateUpdateRegionSize = Integer.parseInt(properties.getProperty("templateUpdateRegionSize"));
+        int parseTreeRegionSie = Integer.parseInt(properties.getProperty("parseTreeRegionSize"));
+        byte[] b = new byte[parseTreeRegionSie];
+        TCFG.sm.read(1+tcfgSize+transferParamMatrixSize+tuningRegionSize+templateUpdateRegionSize, parseTreeRegionSie, b);
+        return JSONObject.parseObject(b, Node.class);
+    }
+
+    public void saveParseTreeRegion(Node parseTreeRegion) throws Exception{
+        Properties properties = getConfig();
+        int tcfgSize = Integer.parseInt(properties.getProperty("TCFGSize"));
+        int transferParamMatrixSize = Integer.parseInt(properties.getProperty("transferParamMatrixSize"));
+        int tuningRegionSize = Integer.parseInt(properties.getProperty("tuningRegionSize"));
+        int templateUpdateRegionSize = Integer.parseInt(properties.getProperty("templateUpdateRegionSize"));
+        int parseTreeRegionSie = Integer.parseInt(properties.getProperty("parseTreeRegionSize"));
+        String str = JSONObject.toJSONString(parseTreeRegion);
+        TCFG.sm.write(1+tcfgSize+transferParamMatrixSize+tuningRegionSize+templateUpdateRegionSize, parseTreeRegionSie, str.getBytes("UTF-8"));
     }
 }
