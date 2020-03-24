@@ -18,7 +18,7 @@ import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.rabbitmq.RMQSource;
 import org.apache.flink.streaming.connectors.rabbitmq.common.RMQConnectionConfig;
 import org.apache.log4j.Logger;
-import templatemining.FlinkDrain;
+import templatemining.Parse;
 import workflow.WatermarkGenerator;
 
 import java.io.File;
@@ -30,7 +30,7 @@ public class Entrance {
         dataStream.map(line -> Tuple2.of(parameter.get("logData"), line))
                 .returns(Types.TUPLE(Types.STRING, Types.STRING))
                 .keyBy(t -> t.f0)
-                .process(new FlinkDrain.Parse())
+                .process(new Parse())
                 .assignTimestampsAndWatermarks(new WatermarkGenerator.BoundedOutOfOrdernessGenerator())
                 .keyBy(t -> t.f2)
                 .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("timeWindow"))))
@@ -46,7 +46,7 @@ public class Entrance {
         DataStream<Tuple7<String, String, String, String, String, String, String>> templateStream = dataStream.map(line -> Tuple2.of(parameter.get("logData"), line))
                 .returns(Types.TUPLE(Types.STRING, Types.STRING))
                 .keyBy(t -> t.f0)
-                .process(new FlinkDrain.Parse());
+                .process(new Parse());
         //ParamMatrix Update
         templateStream
                 .assignTimestampsAndWatermarks(new WatermarkGenerator.BoundedOutOfOrdernessGenerator())
