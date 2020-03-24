@@ -18,6 +18,7 @@ import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.rabbitmq.RMQSource;
 import org.apache.flink.streaming.connectors.rabbitmq.common.RMQConnectionConfig;
 import org.apache.log4j.Logger;
+import templatemining.Parse;
 import workflow.WatermarkGenerator;
 
 import java.io.File;
@@ -29,7 +30,7 @@ public class Entrance {
         dataStream.map(line -> Tuple2.of(parameter.get("logData"), line))
                 .returns(Types.TUPLE(Types.STRING, Types.STRING))
                 .keyBy(t -> t.f0)
-                .process(new FlinkDrain.Parse())
+                .process(new Parse())
                 .assignTimestampsAndWatermarks(new WatermarkGenerator.BoundedOutOfOrdernessGenerator())
                 .keyBy(t -> t.f2)
                 .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("timeWindow"))))
@@ -45,7 +46,7 @@ public class Entrance {
         DataStream<Tuple7<String, String, String, String, String, String, String>> templateStream = dataStream.map(line -> Tuple2.of(parameter.get("logData"), line))
                 .returns(Types.TUPLE(Types.STRING, Types.STRING))
                 .keyBy(t -> t.f0)
-                .process(new FlinkDrain.Parse());
+                .process(new Parse());
         //ParamMatrix Update
         templateStream
                 .assignTimestampsAndWatermarks(new WatermarkGenerator.BoundedOutOfOrdernessGenerator())
@@ -110,7 +111,7 @@ public class Entrance {
         String sp = parameter.get("shareMemoryFilePath");
         TCFG.sm = new ShareMemory(sp, "TCFG");
         String mode = parameter.get("workFlowMode");
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment().setParallelism(1);
         env.getConfig().setGlobalJobParameters(parameter);
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
         DataStreamSource<String> dataStream = getDataStream(env, log, parameter);
@@ -120,6 +121,7 @@ public class Entrance {
                 break;
             case "1":
                 workFlow1(env, dataStream, parameter);
+                break;
             case "2":
                 workFlow2(env, dataStream, parameter);
         }
