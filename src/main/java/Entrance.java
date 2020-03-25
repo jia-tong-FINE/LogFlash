@@ -1,7 +1,9 @@
 import TCFGmodel.ShareMemory;
 import TCFGmodel.TCFG;
 import TCFGmodel.TCFGConstructor;
+import TCFGmodel.TCFGUtil;
 import faultdiagnosis.FaultDiagnosisMode2;
+import humanfeedback.FeedbackListener;
 import humanfeedback.SuspiciousRegionMonitor;
 import modelconstruction.MatrixUpdaterMode2;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
@@ -43,6 +45,8 @@ public class Entrance {
     }
 
     public static void workFlow2(StreamExecutionEnvironment env, DataStreamSource<String> dataStream, ParameterTool parameter) throws Exception {
+        TCFGUtil tcfgUtil = new TCFGUtil();
+        tcfgUtil.initiateShareMemory();
         DataStream<Tuple7<String, String, String, String, String, String, String>> templateStream = dataStream.map(line -> Tuple2.of(parameter.get("logData"), line))
                 .returns(Types.TUPLE(Types.STRING, Types.STRING))
                 .keyBy(t -> t.f0)
@@ -81,7 +85,7 @@ public class Entrance {
                 log.error("Source type can be file, rabbitmq or kafka.");
                 break;
             case "file":
-                String input_dir = String.format("src/main/resources/data/%s/raw", parameter.get("logData"));
+                String input_dir = String.format("src/main/resources/%s/raw", parameter.get("logData"));
                 return env.readTextFile(input_dir + File.separator + parameter.get("logName"));
             case "rabbitmq":
                 RMQConnectionConfig connectionConfig = new RMQConnectionConfig.Builder()
@@ -110,6 +114,10 @@ public class Entrance {
         ParameterTool parameter = ParameterTool.fromPropertiesFile("src/main/resources/config.properties");
         String sp = parameter.get("shareMemoryFilePath");
         TCFG.sm = new ShareMemory(sp, "TCFG");
+
+        FeedbackListener listener = new FeedbackListener();
+        listener.start();
+
         String mode = parameter.get("workFlowMode");
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment().setParallelism(1);
         env.getConfig().setGlobalJobParameters(parameter);

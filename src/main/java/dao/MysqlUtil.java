@@ -1,5 +1,6 @@
 package dao;
 
+import com.google.gson.Gson;
 import faultdiagnosis.Anomaly;
 import org.apache.flink.api.java.tuple.Tuple7;
 import org.apache.flink.api.java.utils.ParameterTool;
@@ -32,30 +33,35 @@ public class MysqlUtil {
         return time;
     }
 
-    public void createTable() throws Exception {
-        Class.forName(JDBC_DRIVER);
-        Connection dbConnection = DriverManager.getConnection(parameter.get("connectionString"), parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
-        String createTableSQL = "CREATE TABLE anomaly_log("
-                + "id INT(11) PRIMARY KEY NOT NULL AUTO_INCREMENT"
-                + "time VARCHAR(100) NOT NULL, "
-                + "unixtime VARCHAR(15) NOT NULL, "
-                + "level VARCHAR(20), "
-                + "component VARCHAR(500), "
-                + "content VARCHAR(3000), "
-                + "template VARCHAR(3000), "
-                + "paramlist VARCHAR(3000), "
-                + "eventid VARCHAR(200), "
-                + "anomalylogs TEXT, "
-                + "anomalyrequest TEXT, "
-                + "anomalywindow VARCHAR(200), "
-                + "anomalytype VARCHAR(10), "
-                + "anomalytemplates VARCHAR(500), "
-                + "logsequence_json TEXT"
-                + ")";
-        PreparedStatement preparedStatement = dbConnection.prepareStatement(createTableSQL);
-        preparedStatement.executeUpdate();
-        preparedStatement.close();
-        dbConnection.close();
+    public void createTable() {
+        try {
+            Class.forName(JDBC_DRIVER);
+            Connection dbConnection = DriverManager.getConnection(parameter.get("connectionString"), parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
+            String createTableSQL = "CREATE TABLE anomaly_log("
+                    + "id INT(11) PRIMARY KEY NOT NULL AUTO_INCREMENT, "
+                    + "time VARCHAR(100) NOT NULL, "
+                    + "unixtime VARCHAR(15) NOT NULL, "
+                    + "level VARCHAR(20), "
+                    + "component VARCHAR(500), "
+                    + "content VARCHAR(3000), "
+                    + "template VARCHAR(3000), "
+                    + "paramlist VARCHAR(3000), "
+                    + "eventid VARCHAR(200), "
+                    + "anomalylogs TEXT, "
+                    + "anomalyrequest TEXT, "
+                    + "anomalywindow VARCHAR(200), "
+                    + "anomalytype VARCHAR(10), "
+                    + "anomalytemplates VARCHAR(500), "
+                    + "logsequence_json TEXT"
+                    + ")";
+            PreparedStatement preparedStatement = dbConnection.prepareStatement(createTableSQL);
+            preparedStatement.executeUpdate();
+            preparedStatement.close();
+            dbConnection.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     public void insertAnomaly(Anomaly anomaly) {
@@ -69,7 +75,7 @@ public class MysqlUtil {
             conn = DriverManager.getConnection(parameter.get("connectionString"), parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
             // 执行查询
             stmt = conn.createStatement();
-            String sql = "insert into anomaly_log (time,unixtime,level,component,content,template,paramlist,eventid,anomalylogs,anomalyrequest,anomalywindow,anomalytype,anomalytemplates) values(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            String sql = "insert into anomaly_log (time,unixtime,level,component,content,template,paramlist,eventid,anomalylogs,anomalyrequest,anomalywindow,anomalytype,anomalytemplates, logsequence_json) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             ps = conn.prepareStatement(sql);
             List anomalylogslist = anomaly.getAnomalyLogList();
             String anomalytype = anomaly.getAnomalyType();
@@ -89,29 +95,32 @@ public class MysqlUtil {
                 anomalylogs = anomalylogs + log.f3 + '\n';
             }
             String anomalyrequest = "";
-            for (Object templog: anomalyrequestlist) {
-                Tuple7 log = (Tuple7)templog;
+            for (Object templog : anomalyrequestlist) {
+                Tuple7 log = (Tuple7) templog;
                 anomalyrequest = anomalyrequest + log.f3 + '\n';
             }
             String anomalyrequesttemplates = "";
-            for (Object templog: anomalyrequestlist) {
-                Tuple7 log = (Tuple7)templog;
+            for (Object templog : anomalyrequestlist) {
+                Tuple7 log = (Tuple7) templog;
                 anomalyrequesttemplates = anomalyrequesttemplates + log.f6 + '\n';
             }
             String anomalywindow = "";
-            ps.setString(1,time);
-            ps.setString(2,unixtime);
-            ps.setString(3,level);
-            ps.setString(4,component);
-            ps.setString(5,content);
-            ps.setString(6,template);
-            ps.setString(7,paramlist);
-            ps.setString(8,eventid);
-            ps.setString(9,anomalylogs);
-            ps.setString(10,anomalyrequest);
+            Gson gson = new Gson();
+            String logsequence_json = gson.toJson(anomaly);
+            ps.setString(1, time);
+            ps.setString(2, unixtime);
+            ps.setString(3, level);
+            ps.setString(4, component);
+            ps.setString(5, content);
+            ps.setString(6, template);
+            ps.setString(7, paramlist);
+            ps.setString(8, eventid);
+            ps.setString(9, anomalylogs);
+            ps.setString(10, anomalyrequest);
             ps.setString(11,anomalywindow);
             ps.setString(12,anomalytype);
-            ps.setString(13,anomalyrequesttemplates);
+            ps.setString(13, anomalyrequesttemplates);
+            ps.setString(14, logsequence_json);
             ps.executeUpdate();
 
             // 完成后关闭
@@ -143,12 +152,13 @@ public class MysqlUtil {
             conn = DriverManager.getConnection(parameter.get("connectionString"), parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
             // 执行查询
             stmt = conn.createStatement();
-            String sql = "SELECT * FROM anomaly WHERE id = ?";
+            String sql = "SELECT logsequence_json FROM anomaly_log WHERE id = ?";
             ps = conn.prepareStatement(sql);
             ps.setInt(1, id);
-            ResultSet rs = stmt.executeQuery(sql);
+            ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-
+                Gson gson = new Gson();
+                return gson.fromJson(rs.getString(1), Anomaly.class);
             }
             // 完成后关闭
             rs.close();
