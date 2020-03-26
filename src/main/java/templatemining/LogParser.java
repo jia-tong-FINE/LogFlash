@@ -12,7 +12,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class LogParser {
+public class LogParser implements Serializable{
     private String log_format;
     private String[] rex;
     private int depth, maxChild;
@@ -329,15 +329,13 @@ public class LogParser {
             printTree(entry.getValue(), dep + 1);
     }
 
-    void saveTemplate(Node node, int dep, FileWriter oo) throws IOException {
+    Map<String, String> saveTemplate(Node node, int dep, Map<String, String> map) {
         if (node.getDepth() == 1 && node.getDigitOrtoken().equals("1")) {
             for (Map.Entry<String, Node> entry : node.getChildD().entrySet()) {
                 List<LogCluster> lg = entry.getValue().getChildLG();
                 for (LogCluster t : lg) {
                     String template = String.join(" ", t.getLogTemplate());
-                    String hash = getHash(template) + ',';
-                    oo.write(hash);
-                    oo.write(template + '\n');
+                    map.put(getHash(template), template);
                 }
             }
         }
@@ -345,12 +343,11 @@ public class LogParser {
             List<LogCluster> lg = node.getChildLG();
             for (LogCluster t : lg) {
                 String template = String.join(" ", t.getLogTemplate());
-                String hash = getHash(template) + ',';
-                oo.write(hash);
-                oo.write(template + '\n');
+                map.put(getHash(template), template);
             }
         }
         for (Map.Entry<String, Node> entry : node.getChildD().entrySet())
-            saveTemplate(entry.getValue(), dep + 1, oo);
+            map = saveTemplate(entry.getValue(), dep + 1, map);
+        return map;
     }
 }
