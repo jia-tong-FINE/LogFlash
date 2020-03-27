@@ -1,6 +1,6 @@
 package dao;
 
-import com.google.gson.Gson;
+import com.alibaba.fastjson.JSON;
 import faultdiagnosis.Anomaly;
 import org.apache.flink.api.java.tuple.Tuple7;
 import org.apache.flink.api.java.utils.ParameterTool;
@@ -105,8 +105,7 @@ public class MysqlUtil {
                 anomalyrequesttemplates = anomalyrequesttemplates + log.f6 + '\n';
             }
             String anomalywindow = "";
-            Gson gson = new Gson();
-            String logsequence_json = gson.toJson(anomaly);
+            String logsequence_json = JSON.toJSONString(anomaly);
             ps.setString(1, time);
             ps.setString(2, unixtime);
             ps.setString(3, level);
@@ -157,8 +156,7 @@ public class MysqlUtil {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                Gson gson = new Gson();
-                return gson.fromJson(rs.getString(1), Anomaly.class);
+                return JSON.parseObject(rs.getString(1), Anomaly.class);
             }
             // 完成后关闭
             rs.close();
