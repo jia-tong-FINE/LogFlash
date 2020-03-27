@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 
 public class MysqlUtil {
@@ -81,17 +82,17 @@ public class MysqlUtil {
             String anomalytype = anomaly.getAnomalyType();
             Tuple7 logcontent = anomaly.getAnomalyLog();
             List anomalyrequestlist = anomaly.getSuspectedAnomalyRequest();
-            String unixtime = (String)logcontent.f0;
+            String unixtime = (String) logcontent.f0;
             String time = StamptoTime(unixtime, "HH:mm:ss:SSS");
-            String level = (String)logcontent.f1;
-            String component = (String)logcontent.f2;
-            String content = (String)logcontent.f3;
-            String template = (String)logcontent.f4;
-            String paramlist = (String)logcontent.f5;
-            String eventid = (String)logcontent.f6;
+            String level = (String) logcontent.f1;
+            String component = (String) logcontent.f2;
+            String content = (String) logcontent.f3;
+            String template = (String) logcontent.f4;
+            String paramlist = (String) logcontent.f5;
+            String eventid = (String) logcontent.f6;
             String anomalylogs = "";
-            for (Object templog: anomalylogslist) {
-                Tuple7 log = (Tuple7)templog;
+            for (Object templog : anomalylogslist) {
+                Tuple7 log = (Tuple7) templog;
                 anomalylogs = anomalylogs + log.f3 + '\n';
             }
             String anomalyrequest = "";
@@ -116,8 +117,8 @@ public class MysqlUtil {
             ps.setString(8, eventid);
             ps.setString(9, anomalylogs);
             ps.setString(10, anomalyrequest);
-            ps.setString(11,anomalywindow);
-            ps.setString(12,anomalytype);
+            ps.setString(11, anomalywindow);
+            ps.setString(12, anomalytype);
             ps.setString(13, anomalyrequesttemplates);
             ps.setString(14, logsequence_json);
             ps.executeUpdate();
@@ -125,16 +126,16 @@ public class MysqlUtil {
             // 完成后关闭
             stmt.close();
             conn.close();
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-        }finally{
-            try{
-                if(stmt!=null) stmt.close();
-            }catch(SQLException se2){
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+            } catch (SQLException se2) {
             }
-            try{
-                if(conn!=null) conn.close();
-            }catch(SQLException se){
+            try {
+                if (conn != null) conn.close();
+            } catch (SQLException se) {
                 se.printStackTrace();
             }
         }
@@ -144,7 +145,7 @@ public class MysqlUtil {
         Connection conn = null;
         Statement stmt = null;
         PreparedStatement ps = null;
-        try{
+        try {
             // 注册 JDBC 驱动
             Class.forName(JDBC_DRIVER);
             // 打开链接
@@ -162,16 +163,16 @@ public class MysqlUtil {
             rs.close();
             stmt.close();
             conn.close();
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-        }finally{
-            try{
-                if(stmt!=null) stmt.close();
-            }catch(SQLException se2){
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+            } catch (SQLException se2) {
             }
-            try{
-                if(conn!=null) conn.close();
-            }catch(SQLException se){
+            try {
+                if (conn != null) conn.close();
+            } catch (SQLException se) {
                 se.printStackTrace();
             }
         }
@@ -182,7 +183,7 @@ public class MysqlUtil {
         Connection conn = null;
         Statement stmt = null;
         PreparedStatement ps = null;
-        try{
+        try {
             // 注册 JDBC 驱动
             Class.forName(JDBC_DRIVER);
             // 打开链接
@@ -201,16 +202,16 @@ public class MysqlUtil {
             rs.close();
             stmt.close();
             conn.close();
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-        }finally{
-            try{
-                if(stmt!=null) stmt.close();
-            }catch(SQLException se2){
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+            } catch (SQLException se2) {
             }
-            try{
-                if(conn!=null) conn.close();
-            }catch(SQLException se){
+            try {
+                if (conn != null) conn.close();
+            } catch (SQLException se) {
                 se.printStackTrace();
             }
         }
@@ -221,7 +222,7 @@ public class MysqlUtil {
         Connection conn = null;
         Statement stmt = null;
         PreparedStatement ps = null;
-        try{
+        try {
             // 注册 JDBC 驱动
             Class.forName(JDBC_DRIVER);
             // 打开链接
@@ -240,20 +241,39 @@ public class MysqlUtil {
             rs.close();
             stmt.close();
             conn.close();
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-        }finally{
-            try{
-                if(stmt!=null) stmt.close();
-            }catch(SQLException se2){
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+            } catch (SQLException se2) {
             }
-            try{
-                if(conn!=null) conn.close();
-            }catch(SQLException se){
+            try {
+                if (conn != null) conn.close();
+            } catch (SQLException se) {
                 se.printStackTrace();
             }
         }
         return null;
     }
 
+    public void insertTemplate(Map<String, String> map) {
+        Connection conn;
+        PreparedStatement ps;
+        try {
+            Class.forName(JDBC_DRIVER);
+            conn = DriverManager.getConnection(parameter.get("connectionString") + "&rewriteBatchedStatements=true", parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
+            String sql = "INSERT INTO template_log (id, template, number) VALUES(?,?,1) ON DUPLICATE KEY UPDATE number=number+1";
+            ps = conn.prepareStatement(sql);
+            for (Map.Entry<String, String> m : map.entrySet()) {
+                ps.setString(1, m.getKey());
+                ps.setString(2, m.getValue());
+                ps.addBatch();
+            }
+            ps.executeBatch();
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
