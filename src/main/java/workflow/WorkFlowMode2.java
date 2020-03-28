@@ -7,6 +7,7 @@ import TCFGmodel.TCFGUtil;
 import faultdiagnosis.FaultDiagnosisMode2;
 import humanfeedback.SuspiciousRegionMonitor;
 import modelconstruction.MatrixUpdaterMode2;
+import modelconstruction.MetricsMonitoring;
 import org.apache.flink.api.java.tuple.Tuple7;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.api.common.typeinfo.Types;
@@ -20,13 +21,15 @@ import templatemining.Parse;
 
 import java.io.File;
 
-public class WorkFlowMode2 implements WorkFlow{
+public class WorkFlowMode2 implements WorkFlow {
 
     public static void main(String[] args) throws Exception {
-
+        long start = System.currentTimeMillis();
         ParameterTool parameter = ParameterTool.fromPropertiesFile("src/main/resources/config.properties");
         String sp = parameter.get("shareMemoryFilePath");
-        TCFG.sm = new ShareMemory(sp,"TCFG");
+        TCFG.sm = new ShareMemory(sp, "TCFG");
+        MetricsMonitoring metricsMonitoring = new MetricsMonitoring();
+        metricsMonitoring.start();
         switch (parameter.get("workFlowMode")) {
             default:
                 break;
@@ -64,8 +67,7 @@ public class WorkFlowMode2 implements WorkFlow{
                 env2.getConfig().setGlobalJobParameters(parameter);
                 env2.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
                 DataStreamSource<String> dataStream2 = env2.readTextFile(input_dir2 + File.separator + logName2);
-                System.out.println(System.currentTimeMillis());
-                DataStream<Tuple7<String,String,String,String,String,String,String>> templateStream= dataStream2.map(line -> Tuple2.of(logdata2, line))
+                DataStream<Tuple7<String, String, String, String, String, String, String>> templateStream = dataStream2.map(line -> Tuple2.of(logdata2, line))
                         .returns(Types.TUPLE(Types.STRING, Types.STRING))
                         .keyBy(t -> t.f0)
                         .process(new Parse());
@@ -73,30 +75,30 @@ public class WorkFlowMode2 implements WorkFlow{
                 templateStream
                         .assignTimestampsAndWatermarks(new WatermarkGenerator.BoundedOutOfOrdernessGenerator())
                         .keyBy(t -> t.f2)
-                        .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))),Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
+                        .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))), Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
                         .process(new MatrixUpdaterMode2.TransferParamMatrixUpdate());
                 //Human Feedback-aware Tuning
                 templateStream
                         .assignTimestampsAndWatermarks(new WatermarkGenerator.BoundedOutOfOrdernessGenerator())
                         .keyBy(t -> t.f2)
-                        .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))),Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
+                        .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))), Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
                         .process(new SuspiciousRegionMonitor.SuspiciousRegionMonitoring());
                 //Fault Diagnosis
                 templateStream
                         .assignTimestampsAndWatermarks(new WatermarkGenerator.BoundedOutOfOrdernessGenerator())
                         .keyBy(t -> t.f2)
-                        .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))),Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
+                        .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))), Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
                         .process(new FaultDiagnosisMode2.FaultDiagnosisProcess());
                 //TCFG Construction
                 templateStream
                         .assignTimestampsAndWatermarks(new WatermarkGenerator.BoundedOutOfOrdernessGenerator())
                         .keyBy(t -> t.f2)
-                        .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))),Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
+                        .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))), Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
                         .process(new TCFGConstructor.TCFGConstructionProcess());
                 env2.execute();
-                System.out.println(System.currentTimeMillis());
                 break;
-
         }
+        System.out.println((System.currentTimeMillis() - start) / 1000 + "s");
+        metricsMonitoring.cancel();
     }
 }
