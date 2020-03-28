@@ -21,7 +21,7 @@ public class Anomaly {
     Anomaly() {
     }
 
-    Anomaly(String anomalyLogId, Tuple7 anomalyLog, List<Tuple7> anomalyLogList, List<Tuple7> suspectedAnomalyRequest, String anomalyType) {
+    public Anomaly(String anomalyLogId, Tuple7 anomalyLog, List<Tuple7> anomalyLogList, List<Tuple7> suspectedAnomalyRequest, String anomalyType) {
         this.anomalyLogId = anomalyLogId;
         this.anomalyLog = anomalyLog;
         this.anomalyLogList = anomalyLogList;

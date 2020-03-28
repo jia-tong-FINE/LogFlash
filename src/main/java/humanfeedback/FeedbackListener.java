@@ -23,7 +23,9 @@ public class FeedbackListener extends Thread {
     private MysqlUtil sql = new MysqlUtil();
 
     public Route serveAnomalyID = (Request request, Response response) -> {
+        response.header("Access-Control-Allow-Origin", "*");
         String id = request.queryParams("id");
+        // Anomaly a = new Anomaly("123", new Tuple7("11", "11", "11","11","11","11","11"), new ArrayList<>(), new ArrayList<>(), "Error");
         Anomaly anomaly = sql.getAnomalyByID(Integer.parseInt(id));
         SuspiciousRegionMonitor.feedBackFalseAlarms.addAnomalyToFalseAlarms(anomaly);
         response.status(200);
