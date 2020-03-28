@@ -111,6 +111,7 @@ public class TCFGUtil {
             rootNode = new Node();
         }
         saveParseTreeRegion(rootNode);
+        saveTrainingFlag(1);
     }
 
     public TCFG getTCFGFromMemory() throws Exception{
@@ -203,5 +204,16 @@ public class TCFGUtil {
         int parseTreeRegionSie = Integer.parseInt(properties.getProperty("parseTreeRegionSize"));
         String str = JSONObject.toJSONString(parseTreeRegion);
         TCFG.sm.write(1+tcfgSize+transferParamMatrixSize+tuningRegionSize+templateUpdateRegionSize, parseTreeRegionSie, str.getBytes("UTF-8"));
+    }
+
+    public int getTrainingFlag() {
+        byte[] b = new byte[1];
+        TCFG.sm.read(0, 1, b);
+        return JSONObject.parseObject(b, Integer.class);
+    }
+
+    public void saveTrainingFlag(int flag) throws Exception{
+        String trainingFlag = JSONObject.toJSONString(flag);
+        TCFG.sm.write(0, 1, trainingFlag.getBytes("UTF-8"));
     }
 }
