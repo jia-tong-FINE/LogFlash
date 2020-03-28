@@ -28,6 +28,9 @@ public class TCFGUtil {
     }
 
     public static List<Tuple7> deleteReplica(List<Tuple7> list) {
+        if (list.size()<2) {
+            return list;
+        }
         List<Tuple7> tempList = new ArrayList<>();
         for (int i = list.size()- 2; i >=0; i--) {
             boolean flag = false;

@@ -24,6 +24,9 @@ public class IndenpendencyFilter {
 
     public List<Tuple7> filterIndependentNodes(List<Tuple7> tempList, TransferParamMatrix transferParamMatrix, long timeWindow, long delta) {
 
+        if (tempList.size()<2) {
+            return tempList;
+        }
         List<Tuple7> filteredLogList = new ArrayList<>();
         Tuple7 latestLog = tempList.get(tempList.size()-1);
         Tuple7 tempLog = tempList.get(tempList.size()-1);
