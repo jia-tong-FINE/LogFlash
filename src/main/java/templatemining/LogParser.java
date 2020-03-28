@@ -12,7 +12,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class LogParser implements Serializable{
+public class LogParser implements Serializable {
     private String log_format;
     private String[] rex;
     private int depth, maxChild;
@@ -50,9 +50,9 @@ public class LogParser implements Serializable{
                 String header = splitters.get(i).replace("<", "").replace(">", "");
                 headers.add(header);
                 if (!header.equals("Content"))
-                    regex.append(String.format("(?<%s>[^\\s]+)", header));
+                    regex.append("(?<").append(header).append(">[^\\s]+)");
                 else
-                    regex.append(String.format("(?<%s>.*)", header));
+                    regex.append("(?<").append(header).append(">.*)");
             }
         }
         Pattern re = Pattern.compile("^" + regex + "$");
@@ -66,13 +66,6 @@ public class LogParser implements Serializable{
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
         formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
         time = String.valueOf(formatter.parse(time).getTime());
-        return time;
-    }
-
-    public String StamptoTime(String time, String pattern) {
-        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
-        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-        time = formatter.format(Long.valueOf(time));
         return time;
     }
 
