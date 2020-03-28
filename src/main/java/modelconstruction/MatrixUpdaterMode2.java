@@ -130,6 +130,9 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
 
             while (iter.hasNext()) {
                 Tuple7 in = iter.next();
+                if (trainingFlag == 0 && !priorEventIDList.contains(in.f6)) {
+                    continue;
+                }
                 //add new template into the matrix during training
                 if (trainingFlag == 1 && !priorEventIDList.contains(in.f6)) {
                     tempTransferParamMatrix.addNewTemplate((String)in.f6,(String)in.f4,parameterTool.getDouble("alpha"));
