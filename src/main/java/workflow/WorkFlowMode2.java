@@ -98,7 +98,7 @@ public class WorkFlowMode2 implements WorkFlow {
                 env2.execute();
                 break;
         }
-        System.out.println((System.currentTimeMillis() - start) / 1000 + "s");
+        System.out.println(1.0 * (System.currentTimeMillis() - start) / 1000 + "s");
         metricsMonitoring.cancel();
     }
 }

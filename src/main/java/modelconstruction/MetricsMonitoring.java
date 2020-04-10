@@ -20,7 +20,10 @@ public class MetricsMonitoring extends Thread {
                 if (transferParamMatrix == null) continue;
                 double norm = transferParamMatrix.getNorm();
                 double var = m.add(norm);
-                if (var != 0.0 && var < 0.01) tcfgUtil.saveTrainingFlag(0);
+                if (var != 0.0 && var < 0.01) {
+                    tcfgUtil.saveTrainingFlag(0);
+                    cancel();
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -57,4 +60,4 @@ class MovingVariance {
         }
         return var / q.size();
     }
-};
+}
