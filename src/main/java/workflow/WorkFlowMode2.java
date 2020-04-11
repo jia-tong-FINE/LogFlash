@@ -1,13 +1,10 @@
 package workflow;
 
-import TCFGmodel.ShareMemory;
-import TCFGmodel.TCFG;
 import TCFGmodel.TCFGConstructor;
-import TCFGmodel.TCFGUtil;
 import faultdiagnosis.FaultDiagnosisMode2;
 import humanfeedback.SuspiciousRegionMonitor;
 import modelconstruction.MatrixUpdaterMode2;
-import modelconstruction.MetricsMonitoring;
+import org.apache.flink.api.common.JobExecutionResult;
 import org.apache.flink.api.java.tuple.Tuple7;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.api.common.typeinfo.Types;
@@ -26,10 +23,6 @@ public class WorkFlowMode2 implements WorkFlow {
     public static void main(String[] args) throws Exception {
         long start = System.currentTimeMillis();
         ParameterTool parameter = ParameterTool.fromPropertiesFile("src/main/resources/config.properties");
-        String sp = parameter.get("shareMemoryFilePath");
-        TCFG.sm = new ShareMemory(sp, "TCFG");
-        MetricsMonitoring metricsMonitoring = new MetricsMonitoring();
-        metricsMonitoring.start();
         switch (parameter.get("workFlowMode")) {
             default:
                 break;
@@ -58,8 +51,6 @@ public class WorkFlowMode2 implements WorkFlow {
                 env.execute();
                 break;
             case "2":
-                TCFGUtil tcfgUtil = new TCFGUtil();
-                tcfgUtil.initiateShareMemory();
                 String logdata2 = "adc";
                 String logName2 = "adc-06-04-2019-2";
                 String input_dir2 = String.format("src/main/resources/%s/raw", logdata2);
@@ -95,10 +86,10 @@ public class WorkFlowMode2 implements WorkFlow {
                         .keyBy(t -> t.f2)
                         .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))), Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
                         .process(new TCFGConstructor.TCFGConstructionProcess());
-                env2.execute();
+                JobExecutionResult result = env2.execute();
+                System.out.println(result.getAllAccumulatorResults());
                 break;
         }
         System.out.println(1.0 * (System.currentTimeMillis() - start) / 1000 + "s");
-        metricsMonitoring.cancel();
     }
 }

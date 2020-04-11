@@ -194,7 +194,6 @@ public class TCFGUtil {
         int templateUpdateRegionSize = Integer.parseInt(properties.getProperty("templateUpdateRegionSize"));
         int parseTreeRegionSie = Integer.parseInt(properties.getProperty("parseTreeRegionSize"));
         byte[] b = new byte[parseTreeRegionSie];
-        System.out.println(TCFG.sm);
         TCFG.sm.read(1+tcfgSize+transferParamMatrixSize+tuningRegionSize+templateUpdateRegionSize, parseTreeRegionSie, b);
         return JSONObject.parseObject(b, Node.class);
     }

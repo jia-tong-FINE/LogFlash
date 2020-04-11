@@ -1,0 +1,21 @@
+# Docker compose file for a Flink job cluster deployment.
+#
+# Parameters:
+# * FLINK_DOCKER_IMAGE_NAME - Image name to use for the deployment (default: flink-job:latest)
+# * FLINK_JOB - Name of the Flink job to execute (default: none)
+# * DEFAULT_PARALLELISM - Default parallelism with which to start the job (default: 1)
+# * FLINK_JOB_ARGUMENTS - Additional arguments which will be passed to the job cluster (default: none)
+
+version: "2.2"
+services:
+  jobmanager:
+    image: ${FLINK_DOCKER_IMAGE_NAME:-flink-job}
+    ports:
+      - "30881:8081"
+    hostname: jobmanager
+    command: job-manager --job-classname ${FLINK_JOB} -Djobmanager.rpc.address=jobmanager -Dparallelism.default=${DEFAULT_PARALLELISM:-1} ${FLINK_JOB_ARGUMENTS}
+  taskmanager:
+    image: ${FLINK_DOCKER_IMAGE_NAME:-flink-job}
+    hostname: taskmanager
+    command: task-manager -Djobmanager.rpc.address=jobmanager
+    scale: ${DEFAULT_PARALLELISM:-1}

@@ -8,7 +8,7 @@ import java.util.Queue;
 public class MetricsMonitoring extends Thread {
 
     private boolean flag = true;
-    private TCFGUtil tcfgUtil = new TCFGUtil();
+    private final TCFGUtil tcfgUtil = new TCFGUtil();
     MovingVariance m = new MovingVariance(10);
 
     @Override
