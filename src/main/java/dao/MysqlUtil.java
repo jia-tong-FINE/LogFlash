@@ -1,5 +1,6 @@
 package dao;
 
+import TCFGmodel.TCFG;
 import com.alibaba.fastjson.JSON;
 import faultdiagnosis.Anomaly;
 import org.apache.flink.api.java.tuple.Tuple7;
@@ -73,12 +74,49 @@ public class MysqlUtil {
             PreparedStatement preparedStatement = dbConnection.prepareStatement(createTableSQL);
             preparedStatement.executeUpdate();
             preparedStatement.close();
-//            stmt = conn.createStatement();
-//            String sql = "insert into anomaly_log (time,unixtime,level,component,content,template,paramlist,eventid,anomalylogs,anomalyrequest,anomalywindow,anomalytype,anomalytemplates, logsequence_json) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-//            ps = conn.prepareStatement(sql);
+            String insertTCFGSQL = "insert into TCFG (id,TCFG_json) values(1,null)";
+            PreparedStatement preparedStatement1 = dbConnection.prepareStatement(insertTCFGSQL);
+            preparedStatement1.executeUpdate();
+            preparedStatement1.close();
             dbConnection.close();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+    }
+
+    public void updateTCFG(TCFG tcfg) {
+        Connection conn = null;
+        Statement stmt = null;
+        PreparedStatement ps = null;
+        try {
+            // 注册 JDBC 驱动
+            Class.forName(JDBC_DRIVER);
+            // 打开链接
+            conn = DriverManager.getConnection(parameter.get("connectionString"), parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
+            // 执行查询
+            stmt = conn.createStatement();
+            String sql = "update TCFG set TCFG_json = ? where id=1";
+            ps = conn.prepareStatement(sql);
+            String logsequence_json = JSON.toJSONString(tcfg);
+            ps.setString(1, logsequence_json);
+            ps.executeUpdate();
+
+            // 完成后关闭
+            stmt.close();
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+            } catch (SQLException se2) {
+            }
+            try {
+                if (conn != null) conn.close();
+            } catch (SQLException se) {
+                se.printStackTrace();
+            }
         }
 
     }
