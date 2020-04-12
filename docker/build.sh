@@ -2,7 +2,7 @@
 usage() {
   cat <<EOF
 Usage:
-  build.sh --job-artifacts <comma-separated-paths-to-job-artifacts> --flink-path <path-to-flink> --resources-path <path-to-resources> [--image-name <image>]
+  build.sh --job-artifacts <comma-separated-paths-to-job-artifacts> --flink-path <path-to-flink> [--image-name <image>]
   build.sh --help
   If the --image-name flag is not used the built image name will be 'flink-job'.
 EOF
@@ -18,10 +18,6 @@ while [[ $# -ge 1 ]]; do
     ;;
   --flink-path)
     FLINK_PATH="$2"
-    shift
-    ;;
-  --resources-path)
-    RESOURCES_PATH="$2"
     shift
     ;;
   --image-name)
@@ -65,11 +61,4 @@ else
   usage
 fi
 
-if [ -n "${RESOURCES_PATH}" ]; then
-  RESOURCES_DIST="${TMPDIR}/resources"
-  cp -r "${RESOURCES_PATH}" "${TMPDIR}"
-else
-  usage
-fi
-
-docker build --build-arg flink_dist="${FLINK_DIST}" --build-arg resources_dist="${RESOURCES_DIST}" --build-arg job_artifacts="${JOB_ARTIFACTS_DIST}" -t "${IMAGE_NAME}" .
+docker build --build-arg flink_dist="${FLINK_DIST}" --build-arg job_artifacts="${JOB_ARTIFACTS_DIST}" -t "${IMAGE_NAME}" .

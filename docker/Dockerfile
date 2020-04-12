@@ -12,26 +12,24 @@ ENV FLINK_PLUGINS_DIR $FLINK_HOME/plugins
 ENV FLINK_OPT_DIR $FLINK_HOME/opt
 ENV FLINK_JOB_ARTIFACTS_DIR $FLINK_INSTALL_PATH/artifacts
 ENV FLINK_USR_LIB_DIR $FLINK_HOME/usrlib
-ENV FLINK_RESOURCES_DIR $FLINK_INSTALL_PATH/resources
 ENV PATH $PATH:$FLINK_HOME/bin
 
 ARG flink_dist=NOT_SET
 ARG job_artifacts=NOT_SET
-ARG resources_dist=NOT_SET
 
 # Install build dependencies and flink
 ADD $flink_dist $FLINK_INSTALL_PATH/
 ADD $job_artifacts/* $FLINK_JOB_ARTIFACTS_DIR/
-ADD $resources_dist $FLINK_RESOURCES_DIR/
 
+RUN mkdir -p $FLINK_INSTALL_PATH/models
 RUN set -x && \
   ln -s $FLINK_INSTALL_PATH/flink-[0-9]* $FLINK_HOME && \
   ln -s $FLINK_JOB_ARTIFACTS_DIR $FLINK_USR_LIB_DIR && \
   addgroup -S flink && adduser -D -S -H -G flink -h $FLINK_HOME flink && \
   chown -R flink:flink ${FLINK_INSTALL_PATH}/flink-* && \
   chown -R flink:flink ${FLINK_JOB_ARTIFACTS_DIR}/ && \
-  chown -h flink:flink $FLINK_HOME && \
-  chown -R flink:flink $FLINK_RESOURCES_DIR
+  chown -R flink:flink $FLINK_INSTALL_PATH/models && \
+  chown -h flink:flink $FLINK_HOME
 
 COPY docker-entrypoint.sh /
 
