@@ -23,6 +23,7 @@ public class WorkFlowMode2 implements WorkFlow {
     public static void main(String[] args) throws Exception {
         long start = System.currentTimeMillis();
         ParameterTool parameter = ParameterTool.fromPropertiesFile("src/main/resources/config.properties");
+        ParameterTool parameterArgs = ParameterTool.fromArgs(args);
         switch (parameter.get("workFlowMode")) {
             default:
                 break;
@@ -57,7 +58,12 @@ public class WorkFlowMode2 implements WorkFlow {
                 StreamExecutionEnvironment env2 = StreamExecutionEnvironment.getExecutionEnvironment().setParallelism(1);
                 env2.getConfig().setGlobalJobParameters(parameter);
                 env2.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
-                DataStreamSource<String> dataStream2 = env2.readTextFile(input_dir2 + File.separator + logName2);
+                DataStreamSource<String> dataStream2;
+                if (parameterArgs.has("log-path")) {
+                    dataStream2 = env2.readTextFile(parameterArgs.get("log-path"));
+                } else {
+                    dataStream2 = env2.readTextFile(input_dir2 + File.separator + logName2);
+                }
                 DataStream<Tuple7<String, String, String, String, String, String, String>> templateStream = dataStream2.map(line -> Tuple2.of(logdata2, line))
                         .returns(Types.TUPLE(Types.STRING, Types.STRING))
                         .keyBy(t -> t.f0)
