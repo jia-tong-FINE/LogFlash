@@ -34,7 +34,7 @@ public class MysqlUtil {
         return time;
     }
 
-    public void createTable() {
+    public void createAnomalyLogTable() {
         try {
             Class.forName(JDBC_DRIVER);
             Connection dbConnection = DriverManager.getConnection(parameter.get("connectionString"), parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
@@ -58,6 +58,24 @@ public class MysqlUtil {
             PreparedStatement preparedStatement = dbConnection.prepareStatement(createTableSQL);
             preparedStatement.executeUpdate();
             preparedStatement.close();
+            dbConnection.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void createTCFGTable() {
+        try {
+            Class.forName(JDBC_DRIVER);
+            Connection dbConnection = DriverManager.getConnection(parameter.get("connectionString"), parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
+            String createTableSQL = "CREATE TABLE TCFG(id INT(11) PRIMARY KEY NOT NULL,TCFG_json TEXT)";
+            PreparedStatement preparedStatement = dbConnection.prepareStatement(createTableSQL);
+            preparedStatement.executeUpdate();
+            preparedStatement.close();
+//            stmt = conn.createStatement();
+//            String sql = "insert into anomaly_log (time,unixtime,level,component,content,template,paramlist,eventid,anomalylogs,anomalyrequest,anomalywindow,anomalytype,anomalytemplates, logsequence_json) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+//            ps = conn.prepareStatement(sql);
             dbConnection.close();
         } catch (Exception e) {
             e.printStackTrace();
