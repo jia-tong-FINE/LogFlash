@@ -82,8 +82,10 @@ public class Entrance {
         String source = parameter.get("sourceName");
         switch (source) {
             default:
-                log.error("Source type can be file, rabbitmq or kafka.");
+                log.error("Source type can be file, rabbitmq, socket or kafka.");
                 break;
+            case "socket":
+                return env.socketTextStream(parameter.get("socketHost"), Integer.parseInt(parameter.get("socketPort")), "\n");
             case "file":
                 String input_dir = String.format("src/main/resources/%s/raw", parameter.get("logData"));
                 return env.readTextFile(input_dir + File.separator + parameter.get("logName"));
