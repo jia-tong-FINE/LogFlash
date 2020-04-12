@@ -1,5 +1,8 @@
 package templatemining;
 
+import TCFGmodel.ShareMemory;
+import TCFGmodel.TCFG;
+import modelconstruction.MetricsMonitoring;
 import org.apache.flink.api.common.accumulators.IntCounter;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
@@ -22,12 +25,17 @@ import TCFGmodel.TCFGUtil;
 public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, Tuple7<String, String, String, String, String, String, String>> {
     private ValueState<Node> parseTree;
     private ValueState<Map<String, String>> templateMap;
-    private IntCounter templateNum = new IntCounter();
-    private LogParser parser;
+    private final IntCounter templateNum = new IntCounter();
     private ParameterTool parameterTool;
+    private TCFGUtil tcfgUtil;
+    private MetricsMonitoring metricsMonitoring;
 
-    public Parse() throws IOException {
-        parameterTool = ParameterTool.fromPropertiesFile("src/main/resources/config.properties");
+    @Override
+    public void processElement(Tuple2<String, String> input,
+                               Context ctx,
+                               Collector<Tuple7<String, String, String, String, String, String, String>> out) throws Exception {
+        Map<String, String> map = templateMap.value() == null ? new HashMap<>() : templateMap.value();
+        Node rootNode = parseTree.value() == null ? tcfgUtil.getParseTreeRegion() : parseTree.value();
         String[] regex = new String[]{
                 "@[a-z0-9]+$",
                 "\\[[A-Za-z0-9\\-\\/]+\\]",
@@ -38,17 +46,7 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
         int depth = 4;
         int maxChild = 100;
         double st = 0.5;
-        parser = new LogParser(regex, parameterTool.get("logFormat"), depth, maxChild, st);
-    }
-
-    @Override
-    public void processElement(Tuple2<String, String> input,
-                               Context ctx,
-                               Collector<Tuple7<String, String, String, String, String, String, String>> out) throws Exception {
-
-        TCFGUtil tcfgUtil = new TCFGUtil();
-        Map<String, String> map = templateMap.value() == null ? new HashMap<>() : templateMap.value();
-        Node rootNode = parseTree.value() == null ? tcfgUtil.getParseTreeRegion() : parseTree.value();
+        LogParser parser = new LogParser(regex, parameterTool.get("logFormat"), depth, maxChild, st);
         DataFrame<String> df_log = parser.load_data(input.f1, parameterTool.get("timeFormat"));
         if (df_log == null) return;
         List<String> logmessageL = Arrays.asList(parser.preprocess(df_log.get(0, "Content")).trim().split("[ ]"));
@@ -108,7 +106,7 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
     }
 
     @Override
-    public void open(Configuration config) {
+    public void open(Configuration config) throws Exception {
         ValueStateDescriptor<Node> descriptor_parseTree =
                 new ValueStateDescriptor<>(
                         "parseTree",
@@ -123,16 +121,22 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
                 );
         templateMap = getRuntimeContext().getState(descriptor_templateMap);
         getRuntimeContext().addAccumulator("templateNum", templateNum);
+        parameterTool = (ParameterTool) getRuntimeContext().getExecutionConfig().getGlobalJobParameters();
+        TCFG.sm = new ShareMemory(parameterTool.get("shareMemoryFilePath"), "TCFG");
+        tcfgUtil = new TCFGUtil();
+        tcfgUtil.initiateShareMemory();
+        metricsMonitoring = new MetricsMonitoring();
+        metricsMonitoring.start();
     }
 
     @Override
     public void close() throws Exception {
         if (templateNum.getLocalValue() == 0) return;
-        TCFGUtil tcfgUtil = new TCFGUtil();
         tcfgUtil.saveParseTreeRegion(parseTree.value());
-        MysqlUtil sql = new MysqlUtil();
-        Map<String, String> map = new HashMap<>();
-        map = parser.saveTemplate(parseTree.value(), 0, map);
+//        MysqlUtil sql = new MysqlUtil();
+//        Map<String, String> map = new HashMap<>();
+//        map = parser.saveTemplate(parseTree.value(), 0, map);
 //        sql.insertTemplate(map);
+        metricsMonitoring.cancel();
     }
 }
