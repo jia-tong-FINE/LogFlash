@@ -3,6 +3,7 @@
 ## Docker部署
 1. 修改路径
     将代码中所有的`src/main/resources`修改为`/opt/resources`
+    
     将配置文件中`shareMemoryFilePath = src/main/resources/models`修改为`shareMemoryFilePath = /opt/models`
 2. maven打包
     使用maven里的package打包

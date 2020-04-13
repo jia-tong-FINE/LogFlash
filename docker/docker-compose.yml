@@ -13,13 +13,13 @@ services:
     ports:
       - "30881:8081"
     hostname: jobmanager
-    command: job-manager --job-classname ${FLINK_JOB} -Djobmanager.rpc.address=jobmanager -Dparallelism.default=${DEFAULT_PARALLELISM:-1} ${FLINK_JOB_ARGUMENTS}
+    command: job-manager --job-classname ${FLINK_JOB} -Djobmanager.rpc.address=jobmanager -Dparallelism.default=${DEFAULT_PARALLELISM:-1} -Dlog.file=/opt/flink/log ${FLINK_JOB_ARGUMENTS}
     volumes:
       - ./resources:/opt/resources
   taskmanager:
     image: ${FLINK_DOCKER_IMAGE_NAME:-flink-job}
     hostname: taskmanager
-    command: task-manager -Djobmanager.rpc.address=jobmanager
+    command: task-manager -Djobmanager.rpc.address=jobmanager -Dlog.file=/opt/flink/log
     scale: ${DEFAULT_PARALLELISM:-1}
     volumes:
       - ./resources:/opt/resources
