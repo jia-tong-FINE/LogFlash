@@ -1,3 +1,5 @@
+package workflow;
+
 import com.alibaba.fastjson.JSON;
 import dao.MysqlUtil;
 import faultdiagnosis.Anomaly;

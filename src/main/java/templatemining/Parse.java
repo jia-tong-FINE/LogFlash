@@ -21,6 +21,7 @@ import java.util.*;
 import joinery.DataFrame;
 import dao.MysqlUtil;
 import TCFGmodel.TCFGUtil;
+import workflow.CommandListener;
 
 public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, Tuple7<String, String, String, String, String, String, String>> {
     private ValueState<Node> parseTree;
@@ -29,6 +30,7 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
     private ParameterTool parameterTool;
     private TCFGUtil tcfgUtil;
     private MetricsMonitoring metricsMonitoring;
+    private CommandListener commandListener;
 
     @Override
     public void processElement(Tuple2<String, String> input,
@@ -103,6 +105,7 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
             }
         }
         templateMap.update(map);
+        System.out.println("test");
     }
 
     @Override
@@ -127,6 +130,8 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
         tcfgUtil.initiateShareMemory();
         metricsMonitoring = new MetricsMonitoring();
         metricsMonitoring.start();
+        commandListener = new CommandListener();
+        commandListener.start();
     }
 
     @Override
@@ -138,5 +143,6 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
 //        map = parser.saveTemplate(parseTree.value(), 0, map);
 //        sql.insertTemplate(map);
         metricsMonitoring.cancel();
+        commandListener.stop();
     }
 }
