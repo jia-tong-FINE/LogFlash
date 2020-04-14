@@ -33,6 +33,10 @@ public class CommandListener extends Thread {
         response.header("Access-Control-Allow-Origin", "*");
         String config = request.queryParams("config");
         //update system configuration
+        Map<String, Object> configMap = JSON.parseObject(config,Map.class);
+        for (Map.Entry<String, Object> obj : configMap.entrySet()){
+            Config.parameter.put(obj.getKey(), obj.getValue().toString());
+        }
         response.status(200);
         return "OK";
     };
@@ -47,7 +51,7 @@ public class CommandListener extends Thread {
 
     @Override
     public void run() {
-        port(811);
+        port(30811);
         Spark.post("/AnomalyID", postAnomalyID);
         Spark.post("/Config", postConfig);
         Spark.post("/CommandList", postCommands);

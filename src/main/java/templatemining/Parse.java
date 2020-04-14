@@ -22,12 +22,12 @@ import joinery.DataFrame;
 import dao.MysqlUtil;
 import TCFGmodel.TCFGUtil;
 import workflow.CommandListener;
+import workflow.Config;
 
 public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, Tuple7<String, String, String, String, String, String, String>> {
     private ValueState<Node> parseTree;
     private ValueState<Map<String, String>> templateMap;
     private final IntCounter templateNum = new IntCounter();
-    private ParameterTool parameterTool;
     private TCFGUtil tcfgUtil;
     private MetricsMonitoring metricsMonitoring;
     private CommandListener commandListener;
@@ -36,6 +36,7 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
     public void processElement(Tuple2<String, String> input,
                                Context ctx,
                                Collector<Tuple7<String, String, String, String, String, String, String>> out) throws Exception {
+        ParameterTool parameterTool = ParameterTool.fromMap(Config.parameter);
         Map<String, String> map = templateMap.value() == null ? new HashMap<>() : templateMap.value();
         Node rootNode = parseTree.value() == null ? tcfgUtil.getParseTreeRegion() : parseTree.value();
         String[] regex = new String[]{
@@ -82,8 +83,8 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
         out.collect(tuple);
         templateNum.add(1);
 //        parser.printTree(rootNode,0);
-        if (templateNum.getLocalValue() % 100 == 0) {
-            FileWriter oo = new FileWriter(new File("src/main/resources/models/templates.json"));
+        if (templateNum.getLocalValue() % 1000 == 0) {
+            FileWriter oo = new FileWriter(new File(parameterTool.get("templateFilePath")));
             Map<String, String> map1 = new HashMap<>();
             map1 = parser.saveTemplate(rootNode, 0, map1);
             for (Map.Entry<String, String> m : map1.entrySet()) {
@@ -123,8 +124,12 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
                 );
         templateMap = getRuntimeContext().getState(descriptor_templateMap);
         getRuntimeContext().addAccumulator("templateNum", templateNum);
-        parameterTool = (ParameterTool) getRuntimeContext().getExecutionConfig().getGlobalJobParameters();
-        TCFG.sm = new ShareMemory(parameterTool.get("shareMemoryFilePath"), "TCFG");
+        Config.parameter = new HashMap<String, String>() {{
+            for (Entry<String, String> value : ParameterTool.fromPropertiesFile("src/main/resources/config.properties").toMap().entrySet()) {
+                put(value.getKey(), value.getValue());
+            }
+        }};
+        TCFG.sm = new ShareMemory(Config.parameter.get("shareMemoryFilePath"), "TCFG");
         tcfgUtil = new TCFGUtil();
         tcfgUtil.initiateShareMemory();
         metricsMonitoring = new MetricsMonitoring();
