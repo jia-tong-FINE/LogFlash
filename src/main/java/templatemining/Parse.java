@@ -105,7 +105,6 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
             }
         }
         templateMap.update(map);
-        System.out.println("test");
     }
 
     @Override
@@ -143,6 +142,6 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
 //        map = parser.saveTemplate(parseTree.value(), 0, map);
 //        sql.insertTemplate(map);
         metricsMonitoring.cancel();
-        commandListener.stop();
+        commandListener.cancel();
     }
 }

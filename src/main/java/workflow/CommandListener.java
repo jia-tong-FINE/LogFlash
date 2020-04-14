@@ -52,4 +52,9 @@ public class CommandListener extends Thread {
         Spark.post("/Config", postConfig);
         Spark.post("/CommandList", postCommands);
     }
+
+    public void cancel() {
+        Spark.stop();
+    }
+
 }
