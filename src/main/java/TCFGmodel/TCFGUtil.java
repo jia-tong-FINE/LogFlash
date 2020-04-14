@@ -100,19 +100,15 @@ public class TCFGUtil {
     }
 
     public void initiateShareMemory() throws Exception {
-        TransferParamMatrix tpm = new TransferParamMatrix();
-        TCFG tcfg = new TCFG();
-        Map<String, String> templateUpdateRegion = new HashMap<>();
-        Node rootNode;
+        TCFG tcfg = getTCFGFromMemory()==null?new TCFG():getTCFGFromMemory();
+        TransferParamMatrix tpm = getMatrixFromMemory()==null?new TransferParamMatrix():getMatrixFromMemory();
+        getTuningRegionFromMemory();
+        Map<String, String> templateUpdateRegion = getTemplateUpdateRegion()==null?new HashMap<>():getTemplateUpdateRegion();
+        Node rootNode = getParseTreeRegion()==null?new Node():getParseTreeRegion();
         saveTCFGInMemory(tcfg);
         saveMatrixInMemory(tpm);
         saveTuningRegionInMemory();
         saveTemplateUpdateRegion(templateUpdateRegion);
-        try {
-            rootNode = getParseTreeRegion();
-        } catch (JSONException ignored){
-            rootNode = new Node();
-        }
         saveParseTreeRegion(rootNode);
         saveTrainingFlag(1);
         saveDetectionFlag(0);
@@ -168,7 +164,8 @@ public class TCFGUtil {
         int tuningRegionSize = Integer.valueOf(properties.getProperty("tuningRegionSize"));
         byte[] b = new byte[tuningRegionSize];
         TCFG.sm.read(transferParamMatrixSize+tcfgSize+2, tuningRegionSize, b);
-        tuningRegion = JSONObject.parseObject(new String(b,"utf-8").trim(), TuningRegion.class);
+        if (JSONObject.parseObject(new String(b,"utf-8").trim(), TuningRegion.class)!=null)
+            tuningRegion = JSONObject.parseObject(new String(b,"utf-8").trim(), TuningRegion.class);
     }
     public void saveTuningRegionInMemory() throws Exception{
         Properties properties = getConfig();
@@ -187,7 +184,12 @@ public class TCFGUtil {
         int templateUpdateRegionSize = Integer.parseInt(properties.getProperty("templateUpdateRegionSize"));
         byte[] b = new byte[templateUpdateRegionSize];
         TCFG.sm.read(2+tcfgSize+transferParamMatrixSize+tuningRegionSize, templateUpdateRegionSize, b);
-        return JSONObject.parseObject(b, Map.class);
+        try {
+            return JSONObject.parseObject(b, Map.class);
+        }
+        catch (JSONException e){
+            return null;
+        }
     }
 
     public void saveTemplateUpdateRegion(Map<String, String> templateUpdateRegion) throws Exception{
@@ -200,7 +202,7 @@ public class TCFGUtil {
         TCFG.sm.write(2+tcfgSize+transferParamMatrixSize+tuningRegionSize, templateUpdateRegionSize, str.getBytes("UTF-8"));
     }
 
-    public Node getParseTreeRegion() throws JSONException {
+    public Node getParseTreeRegion() throws Exception {
         Properties properties = getConfig();
         int tcfgSize = Integer.parseInt(properties.getProperty("TCFGSize"));
         int transferParamMatrixSize = Integer.parseInt(properties.getProperty("transferParamMatrixSize"));
@@ -209,7 +211,7 @@ public class TCFGUtil {
         int parseTreeRegionSie = Integer.parseInt(properties.getProperty("parseTreeRegionSize"));
         byte[] b = new byte[parseTreeRegionSie];
         TCFG.sm.read(2+tcfgSize+transferParamMatrixSize+tuningRegionSize+templateUpdateRegionSize, parseTreeRegionSie, b);
-        return JSONObject.parseObject(b, Node.class);
+        return JSONObject.parseObject(new String(b,"utf-8").trim(), Node.class);
     }
 
     public void saveParseTreeRegion(Node parseTreeRegion) throws Exception{
