@@ -18,10 +18,14 @@ public class MysqlUtil {
     // MySQL 8.0 以上版本 - JDBC 驱动名及数据库 URL
     static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
     static ParameterTool parameter;
+    static String connectionString;
 
     static {
         try {
             parameter = ParameterTool.fromPropertiesFile("src/main/resources/config.properties");
+            String database = parameter.get("database");
+            String databaseUrl = parameter.get("databaseUrl");
+            connectionString = "jdbc:mysql://" + databaseUrl + "/" + database + "?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -38,8 +42,8 @@ public class MysqlUtil {
     public void createAnomalyLogTable() {
         try {
             Class.forName(JDBC_DRIVER);
-            Connection dbConnection = DriverManager.getConnection(parameter.get("connectionString"), parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
-            String createTableSQL = "CREATE TABLE anomaly_log("
+            Connection dbConnection = DriverManager.getConnection(connectionString, parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
+            String createTableSQL = "CREATE TABLE IF NOT EXISTS anomaly_log("
                     + "id INT(11) PRIMARY KEY NOT NULL AUTO_INCREMENT, "
                     + "time VARCHAR(100) NOT NULL, "
                     + "unixtime VARCHAR(15) NOT NULL, "
@@ -69,12 +73,12 @@ public class MysqlUtil {
     public void createTCFGTable() {
         try {
             Class.forName(JDBC_DRIVER);
-            Connection dbConnection = DriverManager.getConnection(parameter.get("connectionString"), parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
-            String createTableSQL = "CREATE TABLE TCFG(id INT(11) PRIMARY KEY NOT NULL,TCFG_json TEXT)";
+            Connection dbConnection = DriverManager.getConnection(connectionString, parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
+            String createTableSQL = "CREATE TABLE IF NOT EXISTS TCFG(id INT(11) PRIMARY KEY NOT NULL,TCFG_json TEXT)";
             PreparedStatement preparedStatement = dbConnection.prepareStatement(createTableSQL);
             preparedStatement.executeUpdate();
             preparedStatement.close();
-            String insertTCFGSQL = "insert into TCFG (id,TCFG_json) values(1,null)";
+            String insertTCFGSQL = "insert into TCFG (id,TCFG_json) values(1,null) ON DUPLICATE KEY UPDATE TCFG_json=null";
             PreparedStatement preparedStatement1 = dbConnection.prepareStatement(insertTCFGSQL);
             preparedStatement1.executeUpdate();
             preparedStatement1.close();
@@ -93,7 +97,7 @@ public class MysqlUtil {
             // 注册 JDBC 驱动
             Class.forName(JDBC_DRIVER);
             // 打开链接
-            conn = DriverManager.getConnection(parameter.get("connectionString"), parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
+            conn = DriverManager.getConnection(connectionString, parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
             // 执行查询
             stmt = conn.createStatement();
             String sql = "update TCFG set TCFG_json = ? where id=1";
@@ -129,7 +133,7 @@ public class MysqlUtil {
             // 注册 JDBC 驱动
             Class.forName(JDBC_DRIVER);
             // 打开链接
-            conn = DriverManager.getConnection(parameter.get("connectionString"), parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
+            conn = DriverManager.getConnection(connectionString, parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
             // 执行查询
             stmt = conn.createStatement();
             String sql = "insert into anomaly_log (time,unixtime,level,component,content,template,paramlist,eventid,anomalylogs,anomalyrequest,anomalywindow,anomalytype,anomalytemplates, logsequence_json) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -205,7 +209,7 @@ public class MysqlUtil {
             // 注册 JDBC 驱动
             Class.forName(JDBC_DRIVER);
             // 打开链接
-            conn = DriverManager.getConnection(parameter.get("connectionString"), parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
+            conn = DriverManager.getConnection(connectionString, parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
             // 执行查询
             stmt = conn.createStatement();
             String sql = "SELECT logsequence_json FROM anomaly_log WHERE id = ?";
@@ -243,7 +247,7 @@ public class MysqlUtil {
             // 注册 JDBC 驱动
             Class.forName(JDBC_DRIVER);
             // 打开链接
-            conn = DriverManager.getConnection(parameter.get("connectionString"), parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
+            conn = DriverManager.getConnection(connectionString, parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
             // 执行查询
             stmt = conn.createStatement();
             String sql = "SELECT failure_type FROM injection_record_hadoop WHERE fault_id = ?";
@@ -282,7 +286,7 @@ public class MysqlUtil {
             // 注册 JDBC 驱动
             Class.forName(JDBC_DRIVER);
             // 打开链接
-            conn = DriverManager.getConnection(parameter.get("connectionString"), parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
+            conn = DriverManager.getConnection(connectionString, parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
             // 执行查询
             stmt = conn.createStatement();
             String sql = "SELECT activated FROM injection_record_hadoop WHERE fault_id = ?";
@@ -318,7 +322,7 @@ public class MysqlUtil {
         PreparedStatement ps;
         try {
             Class.forName(JDBC_DRIVER);
-            conn = DriverManager.getConnection(parameter.get("connectionString") + "&rewriteBatchedStatements=true", parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
+            conn = DriverManager.getConnection(connectionString + "&rewriteBatchedStatements=true", parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
             String sql = "INSERT INTO template_log (id, template, number) VALUES(?,?,1) ON DUPLICATE KEY UPDATE number=number+1";
             ps = conn.prepareStatement(sql);
             for (Map.Entry<String, String> m : map.entrySet()) {
@@ -336,12 +340,12 @@ public class MysqlUtil {
     public void truncateTables() {
         try {
             Class.forName(JDBC_DRIVER);
-            Connection dbConnection = DriverManager.getConnection(parameter.get("connectionString"), parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
+            Connection dbConnection = DriverManager.getConnection(connectionString, parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
             String createTableSQL = "TRUNCATE table anomaly_log";
             PreparedStatement preparedStatement = dbConnection.prepareStatement(createTableSQL);
             preparedStatement.executeUpdate();
             preparedStatement.close();
-            String insertTCFGSQL = "insert into TCFG (id,TCFG_json) values(1,null)";
+            String insertTCFGSQL = "insert into TCFG (id,TCFG_json) values(1,null) ON DUPLICATE KEY UPDATE TCFG_json=null";
             PreparedStatement preparedStatement1 = dbConnection.prepareStatement(insertTCFGSQL);
             preparedStatement1.executeUpdate();
             preparedStatement1.close();
