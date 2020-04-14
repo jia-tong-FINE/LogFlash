@@ -14,6 +14,8 @@ import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import templatemining.Parse;
 
 import java.io.File;
@@ -22,6 +24,7 @@ public class WorkFlowMode2 implements WorkFlow {
 
     public static void main(String[] args) throws Exception {
         long start = System.currentTimeMillis();
+        Logger LOG = LoggerFactory.getLogger(WorkFlowMode2.class);
         ParameterTool parameter = ParameterTool.fromPropertiesFile("src/main/resources/config.properties");
         ParameterTool parameterArgs = ParameterTool.fromArgs(args);
         switch (parameter.get("workFlowMode")) {
@@ -93,9 +96,9 @@ public class WorkFlowMode2 implements WorkFlow {
                         .timeWindow(Time.milliseconds(Long.parseLong(parameter.get("slidingWindowSize"))), Time.milliseconds(Long.parseLong(parameter.get("slidingWindowStep"))))
                         .process(new TCFGConstructor.TCFGConstructionProcess());
                 JobExecutionResult result = env2.execute();
-                System.out.println(result.getAllAccumulatorResults());
+                LOG.info(String.valueOf(result.getAllAccumulatorResults()));
                 break;
         }
-        System.out.println(1.0 * (System.currentTimeMillis() - start) / 1000 + "s");
+        LOG.info(1.0 * (System.currentTimeMillis() - start) / 1000 + "s");
     }
 }

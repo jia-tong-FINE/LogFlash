@@ -24,6 +24,8 @@ public class MetricsMonitoring extends Thread {
                     tcfgUtil.saveTrainingFlag(0);
                     cancel();
                 }
+            } catch (NullPointerException ignored) {
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
