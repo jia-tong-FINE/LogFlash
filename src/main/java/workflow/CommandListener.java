@@ -51,7 +51,7 @@ public class CommandListener extends Thread {
 
     @Override
     public void run() {
-        port(30811);
+        port(30822);
         Spark.post("/AnomalyID", postAnomalyID);
         Spark.post("/Config", postConfig);
         Spark.post("/CommandList", postCommands);
