@@ -115,13 +115,27 @@ public class TCFGUtil {
         }
         saveParseTreeRegion(rootNode);
         saveTrainingFlag(1);
+        saveDetectionFlag(0);
+    }
+    public void cleanShareMemory() throws Exception {
+        TransferParamMatrix tpm = new TransferParamMatrix();
+        TCFG tcfg = new TCFG();
+        Map<String, String> templateUpdateRegion = new HashMap<>();
+        Node rootNode = new Node();
+        saveTCFGInMemory(tcfg);
+        saveMatrixInMemory(tpm);
+        saveTuningRegionInMemory();
+        saveTemplateUpdateRegion(templateUpdateRegion);
+        saveParseTreeRegion(rootNode);
+        saveTrainingFlag(1);
+        saveDetectionFlag(0);
     }
 
     public TCFG getTCFGFromMemory() throws Exception{
         Properties properties = getConfig();
         int tcfgSize = Integer.valueOf(properties.getProperty("TCFGSize"));
         byte[] b = new byte[tcfgSize];
-        TCFG.sm.read(1, tcfgSize, b);
+        TCFG.sm.read(2, tcfgSize, b);
         TCFG tcfg = JSONObject.parseObject(new String(b,"utf-8").trim(), TCFG.class);
         return tcfg;
     }
@@ -129,14 +143,14 @@ public class TCFGUtil {
         Properties properties = getConfig();
         int tcfgSize = Integer.valueOf(properties.getProperty("TCFGSize"));
         String tcfgStr = JSONObject.toJSONString(tcfg);
-        TCFG.sm.write(1, tcfgSize, tcfgStr.getBytes("UTF-8"));
+        TCFG.sm.write(2, tcfgSize, tcfgStr.getBytes("UTF-8"));
     }
     public TransferParamMatrix getMatrixFromMemory() throws Exception{
         Properties properties = getConfig();
         int tcfgSize = Integer.valueOf(properties.getProperty("TCFGSize"));
         int transferParamMatrixSize = Integer.valueOf(properties.getProperty("transferParamMatrixSize"));
         byte[] b = new byte[transferParamMatrixSize];
-        TCFG.sm.read(tcfgSize+1, transferParamMatrixSize, b);
+        TCFG.sm.read(tcfgSize+2, transferParamMatrixSize, b);
         TransferParamMatrix transferParamMatrix = JSONObject.parseObject(new String(b,"utf-8").trim(), TransferParamMatrix.class);
         return transferParamMatrix;
     }
@@ -145,7 +159,7 @@ public class TCFGUtil {
         int tcfgSize = Integer.valueOf(properties.getProperty("TCFGSize"));
         int transferParamMatrixSize = Integer.valueOf(properties.getProperty("transferParamMatrixSize"));
         String matrixStr = JSONObject.toJSONString(transferParamMatrix);
-        TCFG.sm.write(1+tcfgSize, transferParamMatrixSize, matrixStr.getBytes("UTF-8"));
+        TCFG.sm.write(2+tcfgSize, transferParamMatrixSize, matrixStr.getBytes("UTF-8"));
     }
     public void getTuningRegionFromMemory() throws Exception{
         Properties properties = getConfig();
@@ -153,7 +167,7 @@ public class TCFGUtil {
         int transferParamMatrixSize = Integer.valueOf(properties.getProperty("transferParamMatrixSize"));
         int tuningRegionSize = Integer.valueOf(properties.getProperty("tuningRegionSize"));
         byte[] b = new byte[tuningRegionSize];
-        TCFG.sm.read(transferParamMatrixSize+tcfgSize+1, tuningRegionSize, b);
+        TCFG.sm.read(transferParamMatrixSize+tcfgSize+2, tuningRegionSize, b);
         tuningRegion = JSONObject.parseObject(new String(b,"utf-8").trim(), TuningRegion.class);
     }
     public void saveTuningRegionInMemory() throws Exception{
@@ -162,7 +176,7 @@ public class TCFGUtil {
         int transferParamMatrixSize = Integer.valueOf(properties.getProperty("transferParamMatrixSize"));
         int tuningRegionSize = Integer.valueOf(properties.getProperty("tuningRegionSize"));
         String tuningRegionStr = JSONObject.toJSONString(tuningRegion);
-        TCFG.sm.write(1+tcfgSize+transferParamMatrixSize, tuningRegionSize, tuningRegionStr.getBytes("UTF-8"));
+        TCFG.sm.write(2+tcfgSize+transferParamMatrixSize, tuningRegionSize, tuningRegionStr.getBytes("UTF-8"));
     }
 
     public Map<String, String> getTemplateUpdateRegion() {
@@ -172,7 +186,7 @@ public class TCFGUtil {
         int tuningRegionSize = Integer.parseInt(properties.getProperty("tuningRegionSize"));
         int templateUpdateRegionSize = Integer.parseInt(properties.getProperty("templateUpdateRegionSize"));
         byte[] b = new byte[templateUpdateRegionSize];
-        TCFG.sm.read(1+tcfgSize+transferParamMatrixSize+tuningRegionSize, templateUpdateRegionSize, b);
+        TCFG.sm.read(2+tcfgSize+transferParamMatrixSize+tuningRegionSize, templateUpdateRegionSize, b);
         return JSONObject.parseObject(b, Map.class);
     }
 
@@ -183,7 +197,7 @@ public class TCFGUtil {
         int tuningRegionSize = Integer.parseInt(properties.getProperty("tuningRegionSize"));
         int templateUpdateRegionSize = Integer.parseInt(properties.getProperty("templateUpdateRegionSize"));
         String str = JSONObject.toJSONString(templateUpdateRegion);
-        TCFG.sm.write(1+tcfgSize+transferParamMatrixSize+tuningRegionSize, templateUpdateRegionSize, str.getBytes("UTF-8"));
+        TCFG.sm.write(2+tcfgSize+transferParamMatrixSize+tuningRegionSize, templateUpdateRegionSize, str.getBytes("UTF-8"));
     }
 
     public Node getParseTreeRegion() throws JSONException {
@@ -194,7 +208,7 @@ public class TCFGUtil {
         int templateUpdateRegionSize = Integer.parseInt(properties.getProperty("templateUpdateRegionSize"));
         int parseTreeRegionSie = Integer.parseInt(properties.getProperty("parseTreeRegionSize"));
         byte[] b = new byte[parseTreeRegionSie];
-        TCFG.sm.read(1+tcfgSize+transferParamMatrixSize+tuningRegionSize+templateUpdateRegionSize, parseTreeRegionSie, b);
+        TCFG.sm.read(2+tcfgSize+transferParamMatrixSize+tuningRegionSize+templateUpdateRegionSize, parseTreeRegionSie, b);
         return JSONObject.parseObject(b, Node.class);
     }
 
@@ -206,7 +220,7 @@ public class TCFGUtil {
         int templateUpdateRegionSize = Integer.parseInt(properties.getProperty("templateUpdateRegionSize"));
         int parseTreeRegionSie = Integer.parseInt(properties.getProperty("parseTreeRegionSize"));
         String str = JSONObject.toJSONString(parseTreeRegion);
-        TCFG.sm.write(1+tcfgSize+transferParamMatrixSize+tuningRegionSize+templateUpdateRegionSize, parseTreeRegionSie, str.getBytes("UTF-8"));
+        TCFG.sm.write(2+tcfgSize+transferParamMatrixSize+tuningRegionSize+templateUpdateRegionSize, parseTreeRegionSie, str.getBytes("UTF-8"));
     }
 
     public int getTrainingFlag() {
@@ -218,5 +232,16 @@ public class TCFGUtil {
     public void saveTrainingFlag(int flag) throws Exception{
         String trainingFlag = JSONObject.toJSONString(flag);
         TCFG.sm.write(0, 1, trainingFlag.getBytes("UTF-8"));
+    }
+
+    public int getDetectionFlag() {
+        byte[] b = new byte[1];
+        TCFG.sm.read(1, 1, b);
+        return JSONObject.parseObject(b, Integer.class);
+    }
+
+    public void saveDetectionFlag(int flag) throws Exception{
+        String trainingFlag = JSONObject.toJSONString(flag);
+        TCFG.sm.write(1, 1, trainingFlag.getBytes("UTF-8"));
     }
 }

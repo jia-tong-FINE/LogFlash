@@ -2,6 +2,7 @@ package faultdiagnosis;
 
 import TCFGmodel.TCFG;
 import TCFGmodel.TCFGUtil;
+import dao.MysqlUtil;
 import humanfeedback.SuspiciousRegionMonitor;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
@@ -62,29 +63,34 @@ public class FaultDiagnosisMode2 implements FaultDiagnosis{
                 }
             }
             counterValueState.update(counter);
+            TCFGUtil tcfgUtil = new TCFGUtil();
+            int detectionFlag = tcfgUtil.getDetectionFlag();
+            if (detectionFlag == 1) {
+                //Start Failure Diagnosis Process
+                Iterator<Tuple7<String, String, String, String, String, String, String>> iter = input.iterator();
+                List<Tuple7> tempList = new ArrayList<>();
+                FaultDiagnosis faultDiagnosis = new FaultDiagnosisMode2();
+                MysqlUtil mysqlUtil = new MysqlUtil();
+                while (iter.hasNext()) {
+                    Tuple7 in = iter.next();
+                    long inTime = Long.parseLong((String) in.f0);
+                    tempList.add(in);
+                    tempList = TCFGUtil.deleteReplica(tempList);
+                    if (inTime - context.window().getStart() > slidingWindowStep) {
+                        List<Tuple7> slidingWindowList = getTimeWindowLogList(inTime - slidingWindowStep, tempList);
 
-            //Start Failure Diagnosis Process
-            Iterator<Tuple7<String, String, String, String, String, String, String>> iter = input.iterator();
-            List<Tuple7> tempList = new ArrayList<>();
-            FaultDiagnosis faultDiagnosis = new FaultDiagnosisMode2();
-            while (iter.hasNext()) {
-                Tuple7 in = iter.next();
-                long inTime = Long.parseLong((String) in.f0);
-                tempList.add(in);
-                tempList = TCFGUtil.deleteReplica(tempList);
-                if (inTime - context.window().getStart() > slidingWindowStep) {
-                    List<Tuple7> slidingWindowList = getTimeWindowLogList(inTime - slidingWindowStep, tempList);
-
-                    Anomaly anomaly = faultDiagnosis.faultDiagnosisProcess(tempTcfgValueState, slidingWindowList);
-                    if (anomaly != null) {
-                        //set anomaly to Suspicious State
-                        if (anomaly.getAnomalyType() == "Latency") {
-                            SuspiciousRegionMonitor.suspiciousRegion.latencyAnomalyQueue.offer(anomaly);
+                        Anomaly anomaly = faultDiagnosis.faultDiagnosisProcess(tempTcfgValueState, slidingWindowList);
+                        if (anomaly != null) {
+                            //set anomaly to Suspicious State
+                            if (anomaly.getAnomalyType() == "Latency") {
+                                SuspiciousRegionMonitor.suspiciousRegion.latencyAnomalyQueue.offer(anomaly);
+                            }
+                            if (anomaly.getAnomalyType() == "Redundancy") {
+                                SuspiciousRegionMonitor.suspiciousRegion.redundancyAnomalyQueue.offer(anomaly);
+                            }
+                            //store and output anomalies
+                            mysqlUtil.insertAnomaly(anomaly);
                         }
-                        if (anomaly.getAnomalyType() == "Redundancy") {
-                            SuspiciousRegionMonitor.suspiciousRegion.redundancyAnomalyQueue.offer(anomaly);
-                        }
-                        //store and output anomalies
                     }
                 }
             }

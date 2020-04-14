@@ -332,4 +332,22 @@ public class MysqlUtil {
             e.printStackTrace();
         }
     }
+
+    public void truncateTables() {
+        try {
+            Class.forName(JDBC_DRIVER);
+            Connection dbConnection = DriverManager.getConnection(parameter.get("connectionString"), parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
+            String createTableSQL = "TRUNCATE table anomaly_log";
+            PreparedStatement preparedStatement = dbConnection.prepareStatement(createTableSQL);
+            preparedStatement.executeUpdate();
+            preparedStatement.close();
+            String insertTCFGSQL = "insert into TCFG (id,TCFG_json) values(1,null)";
+            PreparedStatement preparedStatement1 = dbConnection.prepareStatement(insertTCFGSQL);
+            preparedStatement1.executeUpdate();
+            preparedStatement1.close();
+            dbConnection.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
