@@ -10,7 +10,6 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.utils.ParameterTool;
-import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
@@ -22,7 +21,7 @@ import templatemining.Parse;
 public class WorkFlowMode2 implements WorkFlow {
 
     @Override
-    public void workflow(StreamExecutionEnvironment env, DataStreamSource<String> dataStream, ParameterTool parameter) throws Exception{
+    public void workflow(StreamExecutionEnvironment env, DataStreamSource<String> dataStream, ParameterTool parameter) throws Exception {
         Logger LOG = LoggerFactory.getLogger(WorkFlowMode2.class);
         DataStream<Tuple7<String, String, String, String, String, String, String>> templateStream = dataStream.map(line -> Tuple2.of(parameter.get("logData"), line))
                 .returns(Types.TUPLE(Types.STRING, Types.STRING))

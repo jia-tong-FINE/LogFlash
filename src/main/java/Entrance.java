@@ -54,7 +54,7 @@ public class Entrance {
         ParameterTool parameter = ParameterTool.fromPropertiesFile("src/main/resources/config.properties");
         String mode = parameter.get("workFlowMode");
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment().setParallelism(1);
-        env.getConfig().setGlobalJobParameters(parameter);
+//        env.getConfig().setGlobalJobParameters(parameter);
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
         DataStreamSource<String> dataStream = getDataStream(env, log, parameter);
         switch (mode) {

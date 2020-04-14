@@ -12,6 +12,7 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
+import workflow.Config;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -38,7 +39,7 @@ public class FaultDiagnosisMode2 implements FaultDiagnosis{
 
         @Override
         public void process(String s, Context context, Iterable<Tuple7<String, String, String, String, String, String, String>> input, Collector<String> out) throws Exception {
-            ParameterTool parameterTool = (ParameterTool) getRuntimeContext().getExecutionConfig().getGlobalJobParameters();
+            ParameterTool parameterTool = ParameterTool.fromMap(Config.parameter);
             long slidingWindowStep = parameterTool.getLong("slidingWindowStep");
             TCFG tempTcfgValueState = tcfgValueState.value();
             //Initialize TCFG and counter
