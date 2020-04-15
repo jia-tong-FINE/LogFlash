@@ -50,6 +50,10 @@ public class Controller {
          return 0;
      }
      private int cleanValuestates() {
+         Config.valueStates.put("transferParamMatrix", 1);
+         Config.valueStates.put("tcfgValueState", 1);
+         Config.valueStates.put("parseTree", 1);
+         Config.valueStates.put("templateMap", 1);
          return 0;
      }
      private int enableHumanFeedback() {
@@ -71,11 +75,22 @@ public class Controller {
          return 0;
      }
      private int enableAnomalyDetection() {
+         TCFGUtil tcfgUtil = new TCFGUtil();
+         try {
+             tcfgUtil.saveDetectionFlag(1);
+         } catch (Exception e) {
+             e.printStackTrace();
+         }
          return 0;
      }
      private int disableAnomalyDetection() {
+         TCFGUtil tcfgUtil = new TCFGUtil();
+         try {
+             tcfgUtil.saveDetectionFlag(0);
+         } catch (Exception e) {
+             e.printStackTrace();
+         }
          return 0;
      }
-
 
 }
