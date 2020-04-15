@@ -1,6 +1,5 @@
 package workflow;
 
-import TCFGmodel.TCFG;
 import TCFGmodel.TCFGUtil;
 import dao.MysqlUtil;
 
@@ -22,8 +21,8 @@ public class Controller {
     }
 
 
-     public void executeCommands (Map<Integer,String> commands) {
-        for (int key: commands.keySet()) {
+     public void executeCommands (Map<String,String> commands) {
+        for (String key: commands.keySet()) {
             execute(COMMANDLIST.get(commands.get(key)));
         }
      }
