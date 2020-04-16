@@ -37,8 +37,10 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
                                Context ctx,
                                Collector<Tuple7<String, String, String, String, String, String, String>> out) throws Exception {
         ParameterTool parameterTool = ParameterTool.fromMap(Config.parameter);
-        Map<String, String> map = templateMap.value() == null ? new HashMap<>() : templateMap.value();
-        Node rootNode = parseTree.value() == null ? tcfgUtil.getParseTreeRegion() : parseTree.value();
+        Map<String, String> map = templateMap.value() == null || Config.valueStates.get("parseTree") == 1? new HashMap<>() : templateMap.value();
+        Config.valueStates.put("parseTree",0);
+        Node rootNode = parseTree.value() == null || Config.valueStates.get("templateMap") == 1? tcfgUtil.getParseTreeRegion() : parseTree.value();
+        Config.valueStates.put("templateMap",0);
         String[] regex = new String[]{
                 "@[a-z0-9]+$",
                 "\\[[A-Za-z0-9\\-\\/]+\\]",

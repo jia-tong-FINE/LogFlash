@@ -4,15 +4,29 @@ import TCFGmodel.TCFG;
 import TCFGmodel.TCFGUtil;
 import dao.MysqlUtil;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Controller {
 
-     int CLEANMEMORY = 0;
-     int CLEANDATABASE = 1;
-     int CLEANVALUESTATES = 2;
-     int ENABLEHUMANFEEDBACK = 3;
-     int DISABLEHUMANFEEDBACK = 4;
-     int ENABLEANOMALYDETECTION = 5;
-     int DISABLEANOMALYDETECTION = 6;
+    Map<String,Integer> COMMANDLIST;
+    public Controller() {
+        COMMANDLIST = new HashMap<>();
+        COMMANDLIST.put("CLEANMEMORY",0);
+        COMMANDLIST.put("CLEANDATABASE",1);
+        COMMANDLIST.put("CLEANVALUESTATES",2);
+        COMMANDLIST.put("ENABLEHUMANFEEDBACK",3);
+        COMMANDLIST.put("DISABLEHUMANFEEDBACK",4);
+        COMMANDLIST.put("ENABLEANOMALYDETECTION",5);
+        COMMANDLIST.put("DISABLEANOMALYDETECTION",6);
+    }
+
+
+     public void executeCommands (Map<Integer,String> commands) {
+        for (int key: commands.keySet()) {
+            execute(COMMANDLIST.get(commands.get(key)));
+        }
+     }
 
      public int execute(int command) {
          switch (command) {
@@ -50,6 +64,10 @@ public class Controller {
          return 0;
      }
      private int cleanValuestates() {
+         Config.valueStates.put("transferParamMatrix", 1);
+         Config.valueStates.put("tcfgValueState", 1);
+         Config.valueStates.put("parseTree", 1);
+         Config.valueStates.put("templateMap", 1);
          return 0;
      }
      private int enableHumanFeedback() {
@@ -71,11 +89,22 @@ public class Controller {
          return 0;
      }
      private int enableAnomalyDetection() {
+         TCFGUtil tcfgUtil = new TCFGUtil();
+         try {
+             tcfgUtil.saveDetectionFlag(1);
+         } catch (Exception e) {
+             e.printStackTrace();
+         }
          return 0;
      }
      private int disableAnomalyDetection() {
+         TCFGUtil tcfgUtil = new TCFGUtil();
+         try {
+             tcfgUtil.saveDetectionFlag(0);
+         } catch (Exception e) {
+             e.printStackTrace();
+         }
          return 0;
      }
-
 
 }

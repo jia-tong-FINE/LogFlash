@@ -43,9 +43,10 @@ public class FaultDiagnosisMode2 implements FaultDiagnosis{
             long slidingWindowStep = parameterTool.getLong("slidingWindowStep");
             TCFG tempTcfgValueState = tcfgValueState.value();
             //Initialize TCFG and counter
-            if (tempTcfgValueState == null) {
+            if (tempTcfgValueState == null || Config.valueStates.get("tcfgValueState") == 1) {
                 tempTcfgValueState = new TCFG();
                 tcfgValueState.update(tempTcfgValueState);
+                Config.valueStates.put("tcfgValueState",0);
             }
             TCFGUtil.counter counter = counterValueState.value();
             if (counter == null) {

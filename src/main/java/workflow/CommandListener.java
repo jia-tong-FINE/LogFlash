@@ -42,9 +42,11 @@ public class CommandListener extends Thread {
     };
     public Route postCommands = (Request request, Response response) -> {
         response.header("Access-Control-Allow-Origin", "*");
-        String CommandList = request.queryParams("commands");
-        Map CommandMap = JSON.parseObject(CommandList,Map.class);
-        //parse CommandMap and execute system updates with workflow.Controller
+        //parse CommandStr and execute system updates with workflow.Controller
+        String commandStr = request.queryParams("commands");
+        Map commandMap = JSON.parseObject(commandStr,Map.class);
+        Controller controller = new Controller();
+        controller.executeCommands(commandMap);
         response.status(200);
         return "OK";
     };

@@ -76,9 +76,10 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
 
             //Initialize paramMatrix and counter
             TransferParamMatrix tempTransferParamMatrix = transferParamMatrix.value();
-            if (tempTransferParamMatrix == null) {
+            if (tempTransferParamMatrix == null || Config.valueStates.get("transferParamMatrix") == 1) {
                 tempTransferParamMatrix = new TransferParamMatrix();
                 transferParamMatrix.update(tempTransferParamMatrix);
+                Config.valueStates.put("transferParamMatrix",0);
             }
             TCFGUtil.counter counter = counterValueState.value();
             if (counter == null) {

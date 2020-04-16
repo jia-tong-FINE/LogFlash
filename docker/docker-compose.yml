@@ -18,6 +18,8 @@ services:
       - ./resources:/opt/resources
   taskmanager:
     image: ${FLINK_DOCKER_IMAGE_NAME:-flink-job}
+    ports:
+      - "30822:30822"
     hostname: taskmanager
     command: task-manager -Djobmanager.rpc.address=jobmanager -Dlog.file=/opt/flink/log
     scale: ${DEFAULT_PARALLELISM:-1}
