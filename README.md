@@ -20,6 +20,9 @@
     将代码中所有的`src/main/resources`修改为`/opt/resources`
     
     将配置文件中`shareMemoryFilePath = src/main/resources/models`修改为`shareMemoryFilePath = /opt/models`
+    
+    将配置文件中`templateFilePath=src/main/resources/models/templates.json`修改为`templateFilePath=/opt/models/templates.json`
+
 2. maven打包
     
     使用maven里的package命令打包，将jar包放在docker目录里
