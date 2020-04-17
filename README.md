@@ -15,7 +15,6 @@
     docker build -t logflash_web -f Dockerfile.logflash .
     ```
 ### logflash部署
-*如果直接使用docker目录里的logflash jar包，可以跳过1-2步*
 1. 修改路径
     
     将代码中所有的`src/main/resources`修改为`/opt/resources`
@@ -23,8 +22,8 @@
     将配置文件中`shareMemoryFilePath = src/main/resources/models`修改为`shareMemoryFilePath = /opt/models`
 2. maven打包
     
-    使用maven里的package打包
-3. 下载[flink](https://www.apache.org/dyn/closer.lua/flink/flink-1.10.0/flink-1.10.0-bin-scala_2.11.tgz)，将flink程序包置于docker目录下
+    使用maven里的package命令打包，将jar包放在docker目录里
+3. 下载[flink](https://www.apache.org/dyn/closer.lua/flink/flink-1.10.0/flink-1.10.0-bin-scala_2.11.tgz)，将flink程序包放在docker目录里
 4. 创建logflash镜像
    ```bash
    cd docker
