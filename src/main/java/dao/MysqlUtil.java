@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSON;
 import faultdiagnosis.Anomaly;
 import org.apache.flink.api.java.tuple.Tuple7;
 import org.apache.flink.api.java.utils.ParameterTool;
+import workflow.Config;
 
 import java.io.IOException;
 import java.sql.*;
@@ -21,14 +22,10 @@ public class MysqlUtil {
     static String connectionString;
 
     static {
-        try {
-            parameter = ParameterTool.fromPropertiesFile("src/main/resources/config.properties");
-            String database = parameter.get("database");
-            String databaseUrl = parameter.get("databaseUrl");
-            connectionString = "jdbc:mysql://" + databaseUrl + "/" + database + "?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        parameter = ParameterTool.fromMap(Config.parameter);
+        String database = parameter.get("database");
+        String databaseUrl = parameter.get("databaseUrl");
+        connectionString = "jdbc:mysql://" + databaseUrl + "/" + database + "?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
     }
 
 
