@@ -2,6 +2,7 @@ package TCFGmodel;
 
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
+import dao.MysqlUtil;
 import humanfeedback.TuningRegion;
 import modelconstruction.TransferParamMatrix;
 import org.apache.flink.api.java.tuple.Tuple7;
@@ -113,6 +114,12 @@ public class TCFGUtil {
         saveParseTreeRegion(rootNode);
         saveTrainingFlag(1);
         saveDetectionFlag(0);
+    }
+
+    public void initiateDatabase() {
+        MysqlUtil mysqlUtil = new MysqlUtil();
+        mysqlUtil.createAnomalyLogTable();
+        mysqlUtil.createTCFGTable();
     }
 
     public TCFG getTCFGFromMemory() throws Exception{

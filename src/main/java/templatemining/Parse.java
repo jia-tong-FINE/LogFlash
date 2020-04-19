@@ -134,6 +134,7 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
         TCFG.sm = new ShareMemory(Config.parameter.get("shareMemoryFilePath"), "TCFG");
         tcfgUtil = new TCFGUtil();
         tcfgUtil.initiateShareMemory();
+        tcfgUtil.initiateDatabase();
         metricsMonitoring = new MetricsMonitoring();
         metricsMonitoring.start();
         commandListener = new CommandListener();

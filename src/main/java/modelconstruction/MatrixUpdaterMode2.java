@@ -1,6 +1,9 @@
 package modelconstruction;
 
 import TCFGmodel.TCFGUtil;
+import com.alibaba.fastjson.JSONObject;
+import com.mysql.cj.jdbc.exceptions.MySQLQueryInterruptedException;
+import dao.MysqlUtil;
 import faultdiagnosis.Anomaly;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
@@ -115,6 +118,12 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
                     }
                     //update share memory
                     tcfgUtil.saveMatrixInMemory(tempTransferParamMatrix);
+                    List list = new ArrayList<>();
+                    list.add(tempTransferParamMatrix.getEventIDandContent());
+                    list.add(tempTransferParamMatrix.getParamMatrix());
+                    String paramMatrixJSON = JSONObject.toJSONString(list);
+                    MysqlUtil mysqlUtil = new MysqlUtil();
+                    mysqlUtil.updateTCFG(paramMatrixJSON);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

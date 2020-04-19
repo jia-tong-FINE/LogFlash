@@ -86,7 +86,7 @@ public class MysqlUtil {
 
     }
 
-    public void updateTCFG(TCFG tcfg) {
+    public void updateTCFG(String tcfg) {
         Connection conn = null;
         Statement stmt = null;
         PreparedStatement ps = null;
@@ -99,8 +99,7 @@ public class MysqlUtil {
             stmt = conn.createStatement();
             String sql = "update TCFG set TCFG_json = ? where id=1";
             ps = conn.prepareStatement(sql);
-            String logsequence_json = JSON.toJSONString(tcfg);
-            ps.setString(1, logsequence_json);
+            ps.setString(1, tcfg);
             ps.executeUpdate();
 
             // 完成后关闭
