@@ -1,20 +1,36 @@
 # LogFlash
-
 ## Docker部署
+### logflash_web部署
+1. 下载前端和数据库项目
+    ```bash
+    git clone https://e.coding.net/Midor/LogFlash.git
+    cd LogFlash
+    ```
+2. 创建mysql镜像
+    ```bash
+    docker build -t logsql -f Dockerfile.mysql .
+    ```
+3. 创建web镜像
+    ```bash
+    docker build -t logflash_web -f Dockerfile.logflash .
+    ```
+### logflash部署
 1. 修改路径
-    将代码中所有的`src/main/resources`修改为`/opt/resources`
     
-    将配置文件中`shareMemoryFilePath = src/main/resources/models`修改为`shareMemoryFilePath = /opt/models`
+    将代码中的路径`src/main/resources`修改为`/opt/resources`
+    
 2. maven打包
-    使用maven里的package打包
-3. 下载[flink](https://www.apache.org/dyn/closer.lua/flink/flink-1.10.0/flink-1.10.0-bin-scala_2.11.tgz)
-4. 将build.sh, Dockerfile, docker-compose.yml, docker-entrypoint.sh, jar包, flink安装包, resources (包括数据和配置文件) 置于docker目录下
-5. 创建镜像
+    
+    使用maven里的package命令打包，将jar包放在docker目录里
+    
+3. 下载[flink](https://www.apache.org/dyn/closer.lua/flink/flink-1.10.0/flink-1.10.0-bin-scala_2.11.tgz)，将flink程序包放在docker目录里
+4. 创建logflash镜像
    ```bash
+   cd docker
    ./build.sh --job-artifacts LogFlash-1.0-SNAPSHOT.jar --flink-path flink-1.10.0-bin-scala_2.11.tgz
    ```
-6. 启动容器
+5. 启动容器
    ```bash
-   FLINK_JOB=workflow.WorkFlowMode2 FLINK_JOB_ARGUMENTS="--log-path <PATH_TO_LOG>" docker-compose up -d
+   FLINK_JOB=Entrance docker-compose up -d
    ```
 

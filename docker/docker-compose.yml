@@ -25,3 +25,15 @@ services:
     scale: ${DEFAULT_PARALLELISM:-1}
     volumes:
       - ./resources:/opt/resources
+  web:
+    image: logflash_web
+    hostname: web
+    ports:
+      - "30855:5000"
+    depends_on:
+      - mysql
+  mysql:
+    image: logsql
+    hostname: mysql
+    ports:
+      - "3307:3306"
