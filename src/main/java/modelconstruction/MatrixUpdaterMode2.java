@@ -137,53 +137,55 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
             List<String> priorEventIDList = tempTransferParamMatrix.getEventIDList();
             List<Tuple7> tempList = new ArrayList<>();
             Iterator<Tuple7<String, String, String, String, String, String, String>> iter = input.iterator();
-
-            while (iter.hasNext()) {
-                Tuple7 in = iter.next();
-                if (trainingFlag == 0 && !priorEventIDList.contains(in.f6)) {
-                    continue;
-                }
-                //add new template into the matrix during training
-                if (trainingFlag == 1 && !priorEventIDList.contains(in.f6)) {
-                    tempTransferParamMatrix.addNewTemplate((String)in.f6,(String)in.f4,parameterTool.getDouble("alpha"));
-                }
-                long inTime = Long.parseLong((String)in.f0);
-                //add new template to matrix update process during training
-                if (trainingFlag == 1 || priorEventIDList.contains(in.f6)) {
-                    tempList.add(in);
-                }
-                tempList = TCFGUtil.deleteReplica(tempList);
-                tempList = new IndenpendencyFilter().filterIndependentNodes(tempList,tempTransferParamMatrix,slidingWindowStep,parameterTool.getLong("delta"));
-                if (inTime-context.window().getStart() > slidingWindowStep) {
-                    MatrixUpdaterMode2 TCFGConstructer = new MatrixUpdaterMode2();
-                    List<Tuple7> slidingWindowList = TCFGConstructer.getTimeWindowLogList(inTime-slidingWindowStep,tempList);
-                    //Start grad computation
-                    for (Tuple7 tuple: slidingWindowList) {
-                        if (slidingWindowList.indexOf(tuple) == slidingWindowList.size()-1) {
-                            break;
-                        }
-                        //update the time matrix during training
-                        if (trainingFlag == 1) {
-                            tempTransferParamMatrix.updateTimeMatrix((String)in.f6,(String)tuple.f6,inTime- Long.parseLong((String)tuple.f0));
-                        }
-                        double gradient = TCFGConstructer.calGradientForInfected(inTime, Long.parseLong((String)tuple.f0),tempTransferParamMatrix,slidingWindowList,slidingWindowStep,parameterTool.getLong("delta"));
-                        if (gradient > parameterTool.getDouble("gradLimitation")) {
-                            gradient = parameterTool.getDouble("gradLimitation");
-                        }
-                        if (gradient < -parameterTool.getDouble("gradLimitation")) {
-                            gradient = -parameterTool.getDouble("gradLimitation");
-                        }
-                        if (gradient != 0) {
-                            tempTransferParamMatrix.updateGradMatrix((String) in.f6, (String) tuple.f6, gradient);
+            if (iter.hasNext()) {
+                while (iter.hasNext()) {
+                    Tuple7 in = iter.next();
+                    if (trainingFlag == 0 && !priorEventIDList.contains(in.f6)) {
+                        continue;
+                    }
+                    //add new template into the matrix during training
+                    if (trainingFlag == 1 && !priorEventIDList.contains(in.f6)) {
+                        tempTransferParamMatrix.addNewTemplate((String) in.f6, (String) in.f4, parameterTool.getDouble("alpha"));
+                    }
+                    long inTime = Long.parseLong((String) in.f0);
+                    //add new template to matrix update process during training
+                    if (trainingFlag == 1 || priorEventIDList.contains(in.f6)) {
+                        tempList.add(in);
+                    }
+                    tempList = TCFGUtil.deleteReplica(tempList);
+                    tempList = new IndenpendencyFilter().filterIndependentNodes(tempList, tempTransferParamMatrix, slidingWindowStep, parameterTool.getLong("delta"));
+                    if (inTime - context.window().getStart() > slidingWindowStep) {
+                        MatrixUpdaterMode2 TCFGConstructer = new MatrixUpdaterMode2();
+                        List<Tuple7> slidingWindowList = TCFGConstructer.getTimeWindowLogList(inTime - slidingWindowStep, tempList);
+                        //Start grad computation
+                        for (Tuple7 tuple : slidingWindowList) {
+                            if (slidingWindowList.indexOf(tuple) == slidingWindowList.size() - 1) {
+                                break;
+                            }
+                            //update the time matrix during training
+                            if (trainingFlag == 1) {
+                                tempTransferParamMatrix.updateTimeMatrix((String) in.f6, (String) tuple.f6, inTime - Long.parseLong((String) tuple.f0));
+                            }
+                            double gradient = TCFGConstructer.calGradientForInfected(inTime, Long.parseLong((String) tuple.f0), tempTransferParamMatrix, slidingWindowList, slidingWindowStep, parameterTool.getLong("delta"));
+                            if (gradient > parameterTool.getDouble("gradLimitation")) {
+                                gradient = parameterTool.getDouble("gradLimitation");
+                            }
+                            if (gradient < -parameterTool.getDouble("gradLimitation")) {
+                                gradient = -parameterTool.getDouble("gradLimitation");
+                            }
+                            if (gradient != 0) {
+                                tempTransferParamMatrix.updateGradMatrix((String) in.f6, (String) tuple.f6, gradient);
+                            }
                         }
                     }
                 }
+                //Start matrix update
+                tempTransferParamMatrix.updateParamMatrix(parameterTool.getDouble("gamma"));
+                tempTransferParamMatrix.decay(parameterTool.getDouble("beta"));
+                tempTransferParamMatrix.clearGradMatrix();
+                transferParamMatrix.update(tempTransferParamMatrix);
             }
-            //Start matrix update
-            tempTransferParamMatrix.updateParamMatrix(parameterTool.getDouble("gamma"));
-            tempTransferParamMatrix.decay(parameterTool.getDouble("beta"));
-            tempTransferParamMatrix.clearGradMatrix();
-            transferParamMatrix.update(tempTransferParamMatrix);
+
         }
 
         @Override
