@@ -2,7 +2,6 @@ package modelconstruction;
 
 import TCFGmodel.TCFGUtil;
 import com.alibaba.fastjson.JSONObject;
-import com.mysql.cj.jdbc.exceptions.MySQLQueryInterruptedException;
 import dao.MysqlUtil;
 import faultdiagnosis.Anomaly;
 import org.apache.flink.api.common.state.ValueState;
