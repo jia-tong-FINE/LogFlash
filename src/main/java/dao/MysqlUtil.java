@@ -1,15 +1,14 @@
 package dao;
 
-import TCFGmodel.TCFG;
 import com.alibaba.fastjson.JSON;
 import faultdiagnosis.Anomaly;
 import org.apache.flink.api.java.tuple.Tuple7;
 import org.apache.flink.api.java.utils.ParameterTool;
 import workflow.Config;
 
-import java.io.IOException;
 import java.sql.*;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
@@ -120,6 +119,100 @@ public class MysqlUtil {
         }
 
     }
+
+    public String getTCFG() {
+        Connection conn = null;
+        Statement stmt = null;
+        PreparedStatement ps = null;
+        try {
+            // 注册 JDBC 驱动
+            Class.forName(JDBC_DRIVER);
+            // 打开链接
+            conn = DriverManager.getConnection(connectionString, parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
+            // 执行查询
+            stmt = conn.createStatement();
+            String sql = "select TCFG_json from TCFG where id=1";
+            ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            String res = "";
+            while (rs.next()) {
+                res = rs.getString(1);
+            }
+            // 完成后关闭
+            stmt.close();
+            conn.close();
+            return res;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+            } catch (SQLException se2) {
+            }
+            try {
+                if (conn != null) conn.close();
+            } catch (SQLException se) {
+                se.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    public List<AnomalyJSON> getAnomalies() {
+        Connection conn = null;
+        Statement stmt = null;
+        PreparedStatement ps = null;
+        List<AnomalyJSON> res = new ArrayList<>();
+        try {
+            // 注册 JDBC 驱动
+            Class.forName(JDBC_DRIVER);
+            // 打开链接
+            conn = DriverManager.getConnection(connectionString, parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
+            // 执行查询
+            stmt = conn.createStatement();
+            String sql = "select id,time,unixtime,level,component,content,template,paramlist,eventid,anomalylogs,anomalyrequest,anomalywindow,anomalytype,anomalytemplates from anomaly_log";
+            ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                AnomalyJSON json = new AnomalyJSON(
+                        Integer.parseInt(rs.getString(1)),
+                        rs.getString(2),
+                        rs.getString(3),
+                        rs.getString(4),
+                        rs.getString(5),
+                        rs.getString(6),
+                        rs.getString(7),
+                        rs.getString(8),
+                        rs.getString(9),
+                        rs.getString(10),
+                        rs.getString(11),
+                        rs.getString(12),
+                        rs.getString(13),
+                        rs.getString(14)
+                );
+                res.add(json);
+            }
+            // 完成后关闭
+            stmt.close();
+            conn.close();
+            return res;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+            } catch (SQLException se2) {
+            }
+            try {
+                if (conn != null) conn.close();
+            } catch (SQLException se) {
+                se.printStackTrace();
+            }
+        }
+        return null;
+    }
+
 
     public void insertAnomaly(Anomaly anomaly) {
         Connection conn = null;

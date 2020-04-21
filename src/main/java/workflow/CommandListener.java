@@ -1,6 +1,7 @@
 package workflow;
 
 import com.alibaba.fastjson.JSON;
+import dao.AnomalyJSON;
 import dao.MysqlUtil;
 import faultdiagnosis.Anomaly;
 import humanfeedback.SuspiciousRegionMonitor;
@@ -9,9 +10,8 @@ import spark.Response;
 import spark.Route;
 import spark.Spark;
 
+import java.util.List;
 import java.util.Map;
-
-import static spark.Spark.port;
 
 public class CommandListener extends Thread {
 
@@ -44,19 +44,36 @@ public class CommandListener extends Thread {
         response.header("Access-Control-Allow-Origin", "*");
         //parse CommandStr and execute system updates with workflow.Controller
         String commandStr = request.queryParams("commands");
-        Map commandMap = JSON.parseObject(commandStr,Map.class);
+        Map commandMap = JSON.parseObject(commandStr, Map.class);
         Controller controller = new Controller();
         controller.executeCommands(commandMap);
         response.status(200);
         return "OK";
     };
 
+    public Route getTCFG = (Request request, Response response) -> {
+        response.header("Access-Control-Allow-Origin", "*");
+        // get TCFG data
+        response.type("application/json");
+        return sql.getTCFG();
+    };
+
+    public Route getAnomalies = (Request request, Response response) -> {
+        response.header("Access-Control-Allow-Origin", "*");
+        // get anomalies data
+        response.type("application/json");
+        List<AnomalyJSON> res = sql.getAnomalies();
+        return JSON.toJSONString(res);
+    };
+
     @Override
     public void run() {
-        port(30822);
+        Spark.port(30822);
         Spark.post("/AnomalyID", postAnomalyID);
         Spark.post("/Config", postConfig);
         Spark.post("/CommandList", postCommands);
+        Spark.get("/TCFG", getTCFG);
+        Spark.get("/Anomalies", getAnomalies);
     }
 
     public void cancel() {
