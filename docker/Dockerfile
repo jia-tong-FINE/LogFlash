@@ -3,6 +3,7 @@ FROM openjdk:8-jre-alpine
 # Install requirements
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
 RUN apk add bash snappy libc6-compat
+RUN apt-get -q update && apt-get -qy install netcat
 
 # Flink environment variables
 ENV FLINK_INSTALL_PATH=/opt
@@ -32,6 +33,7 @@ RUN set -x && \
   chown -h flink:flink $FLINK_HOME
 
 COPY docker-entrypoint.sh /
+COPY wait-for /
 
 USER flink
 EXPOSE 8081 6123 30822
