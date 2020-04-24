@@ -30,7 +30,8 @@ RUN set -x && \
   chown -h flink:flink $FLINK_HOME
 
 COPY docker-entrypoint.sh /
-COPY wait-for /
+COPY wait-for.sh /
+Run chmod 775 /wait-for.sh
 
 USER flink
 EXPOSE 8081 6123 30822 30833
