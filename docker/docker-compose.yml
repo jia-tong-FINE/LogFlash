@@ -34,8 +34,6 @@ services:
   mysql:
     image: logsql
     hostname: mysql
-    ports:
-      - "3307:3306"
   file2stream:
     image: file2stream
     ports:
