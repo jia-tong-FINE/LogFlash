@@ -16,6 +16,9 @@ services:
     command: job-manager --job-classname ${FLINK_JOB} -Djobmanager.rpc.address=jobmanager -Dparallelism.default=${DEFAULT_PARALLELISM:-1} -Dlog.file=/opt/flink/log ${FLINK_JOB_ARGUMENTS}
     volumes:
       - ./resources:/opt/resources
+      - ./models:/opt/models
+    depends_on:
+      - mysql
   taskmanager:
     image: ${FLINK_DOCKER_IMAGE_NAME:-flink-job}
     ports:
@@ -25,11 +28,7 @@ services:
     scale: ${DEFAULT_PARALLELISM:-1}
     volumes:
       - ./resources:/opt/resources
-  web:
-    image: logflash_web
-    hostname: web
-    ports:
-      - "30855:5000"
+      - ./models:/opt/models
     depends_on:
       - mysql
   mysql:
@@ -37,3 +36,10 @@ services:
     hostname: mysql
     ports:
       - "3307:3306"
+  file2stream:
+    image: file2stream
+    ports:
+      - "30833:30833"
+    hostname: file2stream
+    volumes:
+      - ./data:/data
