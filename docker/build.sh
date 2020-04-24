@@ -61,4 +61,4 @@ else
   usage
 fi
 
-docker build --build-arg flink_dist="${FLINK_DIST}" --build-arg job_artifacts="${JOB_ARTIFACTS_DIST}" -t "${IMAGE_NAME}" .
+docker build --build-arg flink_dist="${FLINK_DIST}" --build-arg job_artifacts="${JOB_ARTIFACTS_DIST}" -t "${IMAGE_NAME}" -f Dockerfile.logflash .

@@ -21,6 +21,8 @@ import java.util.*;
 import joinery.DataFrame;
 import dao.MysqlUtil;
 import TCFGmodel.TCFGUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import workflow.CommandListener;
 import workflow.Config;
 
@@ -31,6 +33,7 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
     private TCFGUtil tcfgUtil;
     private MetricsMonitoring metricsMonitoring;
     private CommandListener commandListener;
+    private Logger LOG;
 
     @Override
     public void processElement(Tuple2<String, String> input,
@@ -41,13 +44,20 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
         Config.valueStates.put("parseTree",0);
         Node rootNode = parseTree.value() == null || Config.valueStates.get("templateMap") == 1? tcfgUtil.getParseTreeRegion() : parseTree.value();
         Config.valueStates.put("templateMap",0);
-        String[] regex = new String[]{
-                "@[a-z0-9]+$",
-                "\\[[A-Za-z0-9\\-\\/]+\\]",
-                "\\{.+\\}",
-                "(\\d+\\.){3}\\d+",
-                "(?<=[^A-Za-z0-9])(\\-?\\+?\\d+)(?=[^A-Za-z0-9])|[0-9]+$"
-        };
+        String[] regex = parameterTool.get("regex").split("&");
+//        String[] regex = new String[]{
+//                "@[a-z0-9]+$",
+//                "\\[[A-Za-z0-9\\-\\/]+\\]",
+//                "\\{.+\\}",
+//                "(\\d+\\.){3}\\d+",
+//                "(?<=[^A-Za-z0-9])(\\-?\\+?\\d+)(?=[^A-Za-z0-9])|[0-9]+$"
+//                // 上电
+//                "sftp://[^\\s]*",
+//                "\\{\"data\".*",
+//                "\\{\"result\".*",
+//                "(?<=[^A-Za-z0-9])(\\-?\\+?\\d+)(?=[^A-Za-z0-9])|[0-9]+$", // Numbers
+//                "(/[^\\s]*){2,}" // /mnt/flash/soft/bbu/
+//        };
         int depth = 4;
         int maxChild = 100;
         double st = 0.5;
@@ -86,6 +96,7 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
         templateNum.add(1);
 //        parser.printTree(rootNode,0);
         if (templateNum.getLocalValue() % 1000 == 0) {
+            LOG.info("已接收日志数量：{}", templateNum.getLocalValue());
             FileWriter oo = new FileWriter(new File(parameterTool.get("templateFilePath")));
             Map<String, String> map1 = new HashMap<>();
             map1 = parser.saveTemplate(rootNode, 0, map1);
@@ -131,6 +142,7 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
                 put(value.getKey(), value.getValue());
             }
         }};
+        LOG = LoggerFactory.getLogger(Parse.class);
         TCFG.sm = new ShareMemory(Config.parameter.get("shareMemoryFilePath"), "TCFG");
         tcfgUtil = new TCFGUtil();
         tcfgUtil.initiateShareMemory();

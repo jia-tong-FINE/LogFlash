@@ -1,35 +1,26 @@
 # LogFlash
-## Docker部署
-### logflash_web部署
-1. 下载前端和数据库项目
-    ```bash
-    git clone https://e.coding.net/Midor/LogFlash.git
-    cd LogFlash
-    ```
-2. 创建mysql镜像
-    ```bash
-    docker build -t logsql -f Dockerfile.mysql .
-    ```
-3. 创建web镜像
-    ```bash
-    docker build -t logflash_web -f Dockerfile.logflash .
-    ```
-### logflash部署
-1. 修改路径
-    
-    将代码中的路径`src/main/resources`修改为`/opt/resources`
-    
-2. maven打包
-    
-    使用maven里的package命令打包，将jar包放在docker目录里
-    
-3. 下载[flink](https://www.apache.org/dyn/closer.lua/flink/flink-1.10.0/flink-1.10.0-bin-scala_2.11.tgz)，将flink程序包放在docker目录里
-4. 创建logflash镜像
+## Docker部署    
+1. 下载[flink](https://www.apache.org/dyn/closer.lua/flink/flink-1.10.0/flink-1.10.0-bin-scala_2.11.tgz)，将flink程序包放在docker目录里
+2. 创建logflash镜像
    ```bash
    cd docker
    ./build.sh --job-artifacts LogFlash-1.0-SNAPSHOT.jar --flink-path flink-1.10.0-bin-scala_2.11.tgz
    ```
-5. 启动容器
+3. 创建数据库镜像
+    ```bash
+   docker build -t logsql -f Dockerfile.mysql .
+    ```
+4. 创建file2Stream镜像
+    ```bash
+   docker build -t file2stream -f Dockerfile.file2stream .
+    ```
+5. 通过resources目录下的config.propeties中的sourceName参数指定数据源。使用file：将日志文件放到resources目录下，格式为resources/<日志类型名>/raw/<日志文件>；使用socket：将日志文件放到data目录下，并在logFilePaths中写入日志路径，以/data开头
+6. 创建model目录并修改权限
+    ```bash
+   mkdir models
+   chmod 777 models/ 
+   ```
+7. 启动容器
    ```bash
    FLINK_JOB=Entrance docker-compose up -d
    ```
