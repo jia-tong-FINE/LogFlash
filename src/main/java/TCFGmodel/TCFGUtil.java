@@ -113,7 +113,7 @@ public class TCFGUtil {
         saveTemplateUpdateRegion(templateUpdateRegion);
         saveParseTreeRegion(rootNode);
         saveTrainingFlag(1);
-        saveDetectionFlag(1);
+        saveDetectionFlag(0);
     }
 
     public void initiateDatabase() {
