@@ -1,0 +1,11 @@
+FROM mysql
+
+WORKDIR /
+
+ENV MYSQL_ROOT_PASSWORD jt1118961
+
+COPY ./anomalies.sql /docker-entrypoint-initdb.d
+
+ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
+
+CMD ["mysqld"]
