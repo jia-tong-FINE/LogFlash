@@ -18,6 +18,7 @@ services:
       - ./resources:/opt/resources
       - ./models:/opt/models
     depends_on:
+      - file2stream
       - mysql
   taskmanager:
     image: ${FLINK_DOCKER_IMAGE_NAME:-flink-job}
@@ -30,6 +31,7 @@ services:
       - ./resources:/opt/resources
       - ./models:/opt/models
     depends_on:
+      - file2stream
       - mysql
   mysql:
     image: logsql
