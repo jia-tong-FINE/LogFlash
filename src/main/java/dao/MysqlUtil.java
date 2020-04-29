@@ -45,9 +45,9 @@ public class MysqlUtil {
                     + "unixtime VARCHAR(15) NOT NULL, "
                     + "level VARCHAR(20), "
                     + "component VARCHAR(500), "
-                    + "content VARCHAR(3000), "
-                    + "template VARCHAR(3000), "
-                    + "paramlist VARCHAR(3000), "
+                    + "content TEXT, "
+                    + "template TEXT, "
+                    + "paramlist TEXT, "
                     + "eventid VARCHAR(200), "
                     + "anomalylogs TEXT, "
                     + "anomalyrequest TEXT, "
@@ -70,7 +70,7 @@ public class MysqlUtil {
         try {
             Class.forName(JDBC_DRIVER);
             Connection dbConnection = DriverManager.getConnection(connectionString, parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
-            String createTableSQL = "CREATE TABLE IF NOT EXISTS TCFG(id INT(11) PRIMARY KEY NOT NULL,TCFG_json TEXT)";
+            String createTableSQL = "CREATE TABLE IF NOT EXISTS TCFG(id INT(11) PRIMARY KEY NOT NULL,TCFG_json LONGTEXT)";
             PreparedStatement preparedStatement = dbConnection.prepareStatement(createTableSQL);
             preparedStatement.executeUpdate();
             preparedStatement.close();
@@ -443,4 +443,5 @@ public class MysqlUtil {
             e.printStackTrace();
         }
     }
+
 }

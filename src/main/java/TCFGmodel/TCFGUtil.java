@@ -82,9 +82,7 @@ public class TCFGUtil {
         for (int i = 1; i <= blocks; i++) {
             double midResult = a + (double) i * (b - a) / (double) blocks;
             sum = sum + calProbabilityMode1(midResult, alphaji, delta);
-            //System.out.println(calProbabilityMode1(midResult, alphaji, delta));
         }
-        //System.out.println(sum);
         return sum*e;
     }
 
@@ -118,6 +116,7 @@ public class TCFGUtil {
 
     public void initiateDatabase() {
         MysqlUtil mysqlUtil = new MysqlUtil();
+        mysqlUtil.truncateTables();
         mysqlUtil.createAnomalyLogTable();
         mysqlUtil.createTCFGTable();
     }
