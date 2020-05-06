@@ -49,10 +49,12 @@ public class LogParser implements Serializable {
             } else {
                 String header = splitters.get(i).replace("<", "").replace(">", "");
                 headers.add(header);
-                if (!header.equals("Content"))
-                    regex.append("(?<").append(header).append(">[^\\s]+)");
+                if (header.equals("Content"))
+                    regex.append(String.format("(?<%s>.*)", header));
+                else if (header.equals("RequestID"))
+                    regex.append(String.format("(?<%s>.*?)", header));
                 else
-                    regex.append("(?<").append(header).append(">.*)");
+                    regex.append(String.format("(?<%s>[^\\s]+)", header));
             }
         }
         Pattern re = Pattern.compile("^" + regex + "$");
