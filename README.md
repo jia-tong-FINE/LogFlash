@@ -2,11 +2,14 @@
 
 ## Docker部署
 
-1. 下载[flink](https://www.apache.org/dyn/closer.lua/flink/flink-1.10.0/flink-1.10.0-bin-scala_2.11.tgz)，将flink-1.10.0-bin-scala_2.11.tgz放在docker目录里
+1. 下载flink
+    ```bash
+   cd docker && wget https://mirrors.tuna.tsinghua.edu.cn/apache/flink/flink-1.10.0/flink-1.10.0-bin-scala_2.11.tgz
+   ```
 
 2. 创建logflash镜像
    ```bash
-   cd docker && ./build.sh --job-artifacts LogFlash-1.0-SNAPSHOT.jar --flink-path flink-1.10.0-bin-scala_2.11.tgz
+   ./build.sh --job-artifacts LogFlash-1.0-SNAPSHOT.jar --flink-path flink-1.10.0-bin-scala_2.11.tgz
    ```
    
 3. 创建数据库镜像
