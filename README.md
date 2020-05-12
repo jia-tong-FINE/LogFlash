@@ -1,6 +1,7 @@
 # LogFlash
 
 ## Docker部署
+*请先安装docker、docker-compose、node再进行如下步骤。*
 
 1. 下载flink
     ```bash
@@ -31,9 +32,17 @@
    mkdir models && chmod 777 models/ 
    ```
    
-7. 启动容器
+7. 启动web前端
    ```bash
-   FLINK_JOB=Entrance docker-compose up -d
+   # 安装依赖
+   cd LogFlash_web && npm install --registry=https://registry.npm.taobao.org
+   # 启动服务
+   nohup npm run dev >web.log 2>&1 &
+   ```
+   
+8. 启动容器
+   ```bash
+   cd .. && FLINK_JOB=Entrance docker-compose up -d
    ```
 ## 配置参数说明
 1. 日志数据输入配置参数
