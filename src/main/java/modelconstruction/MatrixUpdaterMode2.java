@@ -153,6 +153,7 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
                         tempList.add(in);
                     }
                     tempList = TCFGUtil.deleteReplica(tempList);
+                    tempList = TCFGUtil.deleteExpiredTemplate(tempList,tempTransferParamMatrix);
                     tempList = new IndenpendencyFilter().filterIndependentNodes(tempList, tempTransferParamMatrix, slidingWindowStep, parameterTool.getLong("delta"));
                     if (inTime - context.window().getStart() > slidingWindowStep) {
                         MatrixUpdaterMode2 TCFGConstructer = new MatrixUpdaterMode2();

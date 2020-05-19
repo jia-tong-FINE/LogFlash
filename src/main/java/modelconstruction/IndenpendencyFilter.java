@@ -42,14 +42,13 @@ public class IndenpendencyFilter {
             double max_transition_prob = 0;
             int max_log_id = leftList.size();
             for (int i = leftList.size()-1; i >=0 ; i--) {
+
                 double alphaij = paramMatrix.get(leftList.get(i).f6).get(tempLog.f6);
                 double prob_alphaij = calProbability(Double.valueOf((String)tempLog.f0), Double.valueOf((String)leftList.get(i).f0),alphaij,timeWindow,delta);
-//                System.out.println(alphaij);
 
                 if (max_transition_prob < prob_alphaij) {
                     max_transition_prob = prob_alphaij;
                     max_log_id = i;
-//                    System.out.println(max_transition_prob);
                 }
             }
             if (max_log_id == leftList.size()) {
@@ -60,9 +59,6 @@ public class IndenpendencyFilter {
             double latest_alphaij = paramMatrix.get(leftList.get(max_log_id).f6).get(latestLog.f6);
             double latest_prob_alphaij = calProbability(Double.valueOf((String)latestLog.f0), Double.valueOf((String)leftList.get(max_log_id).f0),latest_alphaij,timeWindow,delta);
             if (infection_prob >= latest_prob_alphaij) {
-//                System.out.println("tempLog:" +tempLog);
-//                System.out.println("latestLog:" +latestLog);
-//                System.out.println(tempLog.equals(latestLog));
                 if (!tempLog.equals(latestLog)) {
                     filteredLogList.remove(filteredLogList.indexOf(leftList.get(max_log_id)));
                 }
