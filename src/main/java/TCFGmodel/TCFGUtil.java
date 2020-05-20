@@ -58,7 +58,7 @@ public class TCFGUtil {
         List<Tuple7> tempList = list;
 
         for (int i = tempList.size()- 2; i >=0; i--) {
-            if(!transferParamMatrix.getEventIDList().contains(tempList.get(i))) {
+            if(!transferParamMatrix.getEventIDList().contains(tempList.get(i).f6.toString())) {
                 tempList.remove(i);
             }
         }
