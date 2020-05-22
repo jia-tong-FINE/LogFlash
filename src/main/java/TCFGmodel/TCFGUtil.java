@@ -56,9 +56,8 @@ public class TCFGUtil {
 
     public static List<Tuple7> deleteExpiredTemplate(List<Tuple7> list,TransferParamMatrix transferParamMatrix){
         List<Tuple7> tempList = list;
-
         for (int i = tempList.size()- 2; i >=0; i--) {
-            if(!transferParamMatrix.getEventIDList().contains(tempList.get(i).f6.toString())) {
+            if(!transferParamMatrix.getEventIDList().contains(tempList.get(i).f6)) {
                 tempList.remove(i);
             }
         }
@@ -109,7 +108,7 @@ public class TCFGUtil {
         saveTemplateUpdateRegion(templateUpdateRegion);
         saveParseTreeRegion(rootNode);
         saveTrainingFlag(1);
-        saveDetectionFlag(1);
+        saveDetectionFlag(0);
     }
     public void cleanShareMemory() throws Exception {
         TransferParamMatrix tpm = new TransferParamMatrix();

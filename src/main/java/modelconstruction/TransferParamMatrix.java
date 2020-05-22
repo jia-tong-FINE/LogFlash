@@ -131,6 +131,7 @@ public class TransferParamMatrix implements Serializable {
                 eventIDIt.remove();
             }
         }
+        eventIDList.remove(EventID);
         eventIDandContent.remove(EventID);
         paramMatrix.remove(EventID);
         gradMatrix.remove(EventID);
