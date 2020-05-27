@@ -14,7 +14,7 @@ if [ "${CMD}" == "--help" ] || [ "${CMD}" == "-h" ]; then
   exit 0
 elif [ "${CMD}" == "${JOB_CLUSTER}" ] || [ "${CMD}" == "${TASK_MANAGER}" ]; then
   echo "Starting the ${CMD}"
-  ./wait-for.sh db:3306 -- npm start
+  ./wait-for.sh mysql:3306
   if [ "${CMD}" == "${TASK_MANAGER}" ]; then
     sed -i -e "s/log4j.rootLogger=INFO, console/log4j.rootLogger=INFO, console, file/g" ${LOG4J_FILE}
     echo -e "# Log all infos in the given file\nlog4j.appender.file=org.apache.log4j.FileAppender\nlog4j.appender.file.file=${FLINK_HOME}/log/output.log\nlog4j.appender.file.append=false\nlog4j.appender.file.layout=org.apache.log4j.PatternLayout\nlog4j.appender.file.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %-60c %x - %m%n" >> ${LOG4J_FILE}

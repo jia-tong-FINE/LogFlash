@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSON;
 import faultdiagnosis.Anomaly;
 import org.apache.flink.api.java.tuple.Tuple7;
 import org.apache.flink.api.java.utils.ParameterTool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import workflow.Config;
 
 import java.sql.*;
@@ -19,6 +21,7 @@ public class MysqlUtil {
     static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
     static ParameterTool parameter;
     static String connectionString;
+    private static final Logger LOG = LoggerFactory.getLogger(MysqlUtil.class);
 
     static {
         parameter = ParameterTool.fromMap(Config.parameter);
@@ -37,6 +40,7 @@ public class MysqlUtil {
 
     public void createAnomalyLogTable() {
         try {
+            LOG.info("begin createAnomalyLogTable...");
             Class.forName(JDBC_DRIVER);
             Connection dbConnection = DriverManager.getConnection(connectionString, parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
             String createTableSQL = "CREATE TABLE IF NOT EXISTS anomaly_log("
@@ -60,6 +64,7 @@ public class MysqlUtil {
             preparedStatement.executeUpdate();
             preparedStatement.close();
             dbConnection.close();
+            LOG.info("createAnomalyLogTable finished...");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -68,6 +73,7 @@ public class MysqlUtil {
 
     public void createTCFGTable() {
         try {
+            LOG.info("begin createTCFGTable...");
             Class.forName(JDBC_DRIVER);
             Connection dbConnection = DriverManager.getConnection(connectionString, parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
             String createTableSQL = "CREATE TABLE IF NOT EXISTS TCFG(id INT(11) PRIMARY KEY NOT NULL,TCFG_json LONGTEXT)";
@@ -79,6 +85,7 @@ public class MysqlUtil {
             preparedStatement1.executeUpdate();
             preparedStatement1.close();
             dbConnection.close();
+            LOG.info("createTCFGTable finished...");
         } catch (Exception e) {
             e.printStackTrace();
         }
