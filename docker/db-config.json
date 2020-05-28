@@ -1,0 +1,6 @@
+{
+  "host": "mysql",
+  "user": "root",
+  "password": "jt1118961",
+  "database": "anomalies"
+}

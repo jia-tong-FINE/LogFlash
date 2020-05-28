@@ -36,6 +36,13 @@ services:
   mysql:
     image: logsql
     hostname: mysql
+  dbserver:
+    image: dbserver
+    ports:
+      - "30855:30855"
+    hostname: dbserver
+    depends_on:
+      - mysql
   file2stream:
     image: file2stream
     ports:

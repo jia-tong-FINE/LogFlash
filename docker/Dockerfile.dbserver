@@ -1,0 +1,7 @@
+FROM python:3.7
+COPY db* /app
+COPY requirements.txt /app
+WORKDIR /app
+RUN pip install --no-cache-dir -r requirements.txt
+EXPOSE 30855
+CMD ["python", "db-server.py"]
