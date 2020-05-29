@@ -1,5 +1,6 @@
 package workflow;
 
+import TCFGmodel.TCFGUtil;
 import com.alibaba.fastjson.JSON;
 import dao.AnomalyJSON;
 import dao.MysqlUtil;
@@ -10,6 +11,7 @@ import spark.Response;
 import spark.Route;
 import spark.Spark;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -51,6 +53,27 @@ public class CommandListener extends Thread {
         return "OK";
     };
 
+    public Route getConfig = (Request request, Response response) -> {
+        response.header("Access-Control-Allow-Origin", "*");
+        Map<String, Map<String, String>> ret = new HashMap<>();
+        ret.put("Parameter", Config.parameter);
+        ret.put("ValueStates", Config.parameter);
+        String json = JSON.toJSONString(ret);
+        System.out.println(json);
+        return json;
+    };
+
+    public Route getCommands = (Request request, Response response) -> {
+        response.header("Access-Control-Allow-Origin", "*");
+        TCFGUtil tcfgUtil = new TCFGUtil();
+        Map<String, Integer> ret = new HashMap<>();
+        ret.put("Detection", tcfgUtil.getDetectionFlag());
+        ret.put("Training", tcfgUtil.getTrainingFlag());
+        String json = JSON.toJSONString(ret);
+        System.out.println(json);
+        return json;
+    };
+
     public Route getTCFG = (Request request, Response response) -> {
         response.header("Access-Control-Allow-Origin", "*");
         // get TCFG data
@@ -72,6 +95,8 @@ public class CommandListener extends Thread {
         Spark.post("/AnomalyID", postAnomalyID);
         Spark.post("/Config", postConfig);
         Spark.post("/CommandList", postCommands);
+        Spark.get("/Config", getConfig);
+        Spark.get("/CommandList", getCommands);
         Spark.get("/TCFG", getTCFG);
         Spark.get("/Anomalies", getAnomalies);
     }
