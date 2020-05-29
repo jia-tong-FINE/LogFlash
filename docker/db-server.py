@@ -25,7 +25,7 @@ except Exception:
 app = Flask(__name__)
 
 
-@app.route('/anomalies', methods=['GET'])
+@app.route('/Anomaly', methods=['GET'])
 def query_anomalies():
     try:
         db = pymysql.connect(host=db_conf['host'], user=db_conf['user'],
@@ -60,7 +60,7 @@ def query_anomalies():
     return jsonify(data)
 
 
-@app.route('/tcfg', methods=['GET'])
+@app.route('/TCFG', methods=['GET'])
 def query_tcfg():
     try:
         db = pymysql.connect(host=db_conf['host'], user=db_conf['user'],

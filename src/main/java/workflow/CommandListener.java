@@ -25,7 +25,7 @@ public class CommandListener extends Thread {
 
     public Route postAnomalyID = (Request request, Response response) -> {
         response.header("Access-Control-Allow-Origin", "*");
-        String id = request.queryParams("id");
+        String id = request.splat()[0];
         Anomaly anomaly = sql.getAnomalyByID(Integer.parseInt(id));
         SuspiciousRegionMonitor.feedBackFalseAlarms.addAnomalyToFalseAlarms(anomaly);
         response.status(200);
@@ -92,7 +92,7 @@ public class CommandListener extends Thread {
     @Override
     public void run() {
         Spark.port(30822);
-        Spark.post("/AnomalyID", postAnomalyID);
+        Spark.post("/Anomaly/*", postAnomalyID);
         Spark.post("/Config", postConfig);
         Spark.post("/CommandList", postCommands);
         Spark.get("/Config", getConfig);
