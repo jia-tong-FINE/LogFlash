@@ -76,11 +76,11 @@ def query_anomalies():
 def query_tcfg():
     try:
         cursor = db.cursor()
-        cursor.execute("SELECT TCFG_json FROM tcfg WHERE id=1")
+        cursor.execute("SELECT TCFG_json FROM TCFG WHERE id=1")
     except Exception:
         db.ping()
         cursor = db.cursor()
-        cursor.execute("SELECT TCFG_json FROM tcfg WHERE id=1")
+        cursor.execute("SELECT TCFG_json FROM TCFG WHERE id=1")
     result = cursor.fetchone()
     li = json.loads(result[0])
     return jsonify(li)
