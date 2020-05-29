@@ -1,6 +1,7 @@
 import json
 import logging
 import time
+import traceback
 
 import pymysql
 from flask import Flask, jsonify
@@ -21,34 +22,21 @@ try:
 except Exception:
     logging.warning("Config json not found, using default values.")
 
-while True:
-    try:
-        db = pymysql.connect(host=db_conf['host'], user=db_conf['user'],
-                             password=db_conf['password'], database=db_conf['database'])
-    except Exception:
-        logging.error("DB Error/Timeout , Retrying in 10 seconds.")
-        time.sleep(10)
-        continue
-    else:
-        logging.info("Successfully connected to database.")
-        break
-
 app = Flask(__name__)
 
 
 @app.route('/anomalies', methods=['GET'])
 def query_anomalies():
     try:
+        db = pymysql.connect(host=db_conf['host'], user=db_conf['user'],
+                             password=db_conf['password'], database=db_conf['database'])
         cursor = db.cursor()
         cursor.execute(
             "SELECT id,time,unixtime,level,component,content,template,paramlist,eventid,"
             "anomalylogs,anomalyrequest,anomalywindow,anomalytype,anomalytemplates,logsequence_json FROM anomaly_log")
     except Exception:
-        db.ping()
-        cursor = db.cursor()
-        cursor.execute(
-            "SELECT id,time,unixtime,level,component,content,template,paramlist,eventid,"
-            "anomalylogs,anomalyrequest,anomalywindow,anomalytype,anomalytemplates,logsequence_json FROM anomaly_log")
+        traceback.print_exc()
+        return None
     results = cursor.fetchall()
     data = []
     for row in results:
@@ -75,12 +63,13 @@ def query_anomalies():
 @app.route('/tcfg', methods=['GET'])
 def query_tcfg():
     try:
+        db = pymysql.connect(host=db_conf['host'], user=db_conf['user'],
+                             password=db_conf['password'], database=db_conf['database'])
         cursor = db.cursor()
         cursor.execute("SELECT TCFG_json FROM TCFG WHERE id=1")
     except Exception:
-        db.ping()
-        cursor = db.cursor()
-        cursor.execute("SELECT TCFG_json FROM TCFG WHERE id=1")
+        traceback.print_exc()
+        return None
     result = cursor.fetchone()
     li = json.loads(result[0])
     return jsonify(li)
