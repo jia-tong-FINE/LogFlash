@@ -38,10 +38,17 @@ app = Flask(__name__)
 
 @app.route('/anomalies', methods=['GET'])
 def query_anomalies():
-    cursor = db.cursor()
-    cursor.execute(
-        "SELECT id,time,unixtime,level,component,content,template,paramlist,eventid,"
-        "anomalylogs,anomalyrequest,anomalywindow,anomalytype,anomalytemplates,logsequence_json FROM anomaly_log")
+    try:
+        cursor = db.cursor()
+        cursor.execute(
+            "SELECT id,time,unixtime,level,component,content,template,paramlist,eventid,"
+            "anomalylogs,anomalyrequest,anomalywindow,anomalytype,anomalytemplates,logsequence_json FROM anomaly_log")
+    except Exception:
+        db.ping()
+        cursor = db.cursor()
+        cursor.execute(
+            "SELECT id,time,unixtime,level,component,content,template,paramlist,eventid,"
+            "anomalylogs,anomalyrequest,anomalywindow,anomalytype,anomalytemplates,logsequence_json FROM anomaly_log")
     results = cursor.fetchall()
     data = []
     for row in results:
@@ -67,8 +74,13 @@ def query_anomalies():
 
 @app.route('/tcfg', methods=['GET'])
 def query_tcfg():
-    cursor = db.cursor()
-    cursor.execute("SELECT TCFG_json FROM TCFG WHERE id=1")
+    try:
+        cursor = db.cursor()
+        cursor.execute("SELECT TCFG_json FROM tcfg WHERE id=1")
+    except Exception:
+        db.ping()
+        cursor = db.cursor()
+        cursor.execute("SELECT TCFG_json FROM tcfg WHERE id=1")
     result = cursor.fetchone()
     li = json.loads(result[0])
     return jsonify(li)
