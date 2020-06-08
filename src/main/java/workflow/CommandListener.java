@@ -40,7 +40,9 @@ public class CommandListener extends Thread {
             Config.parameter.put(obj.getKey(), obj.getValue().toString());
         }
         response.status(200);
-        return "OK";
+        Map<String, Map<String, String>> ret = new HashMap<>();
+        ret.put("Parameter", Config.parameter);
+        return JSON.toJSONString(ret);
     };
     public Route postCommands = (Request request, Response response) -> {
         response.header("Access-Control-Allow-Origin", "*");
@@ -50,7 +52,11 @@ public class CommandListener extends Thread {
         Controller controller = new Controller();
         controller.executeCommands(commandMap);
         response.status(200);
-        return "OK";
+        TCFGUtil tcfgUtil = new TCFGUtil();
+        Map<String, Integer> ret = new HashMap<>();
+        ret.put("Detection", tcfgUtil.getDetectionFlag());
+        ret.put("Training", tcfgUtil.getTrainingFlag());
+        return JSON.toJSONString(ret);
     };
 
     public Route getConfig = (Request request, Response response) -> {
@@ -93,8 +99,8 @@ public class CommandListener extends Thread {
     public void run() {
         Spark.port(30822);
         Spark.post("/Anomaly/*", postAnomalyID);
-        Spark.post("/Config", postConfig);
-        Spark.post("/CommandList", postCommands);
+        Spark.patch("/Config", postConfig);
+        Spark.patch("/CommandList", postCommands);
         Spark.get("/Config", getConfig);
         Spark.get("/CommandList", getCommands);
         Spark.get("/TCFG", getTCFG);

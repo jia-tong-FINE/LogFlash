@@ -183,6 +183,9 @@ public class FaultDiagnosisMode2 implements FaultDiagnosis{
             tempListId.add((String)node.f6);
         }
         tempListId.remove(tempListId.size()-1);
+        if (latestNode.f6.equals("f80a2e40")||latestNode.f6.equals("4e81c689")|| latestNode.f6.equals("3a294bba") || latestNode.f6.equals("c1be6b3b") || latestNode.f6.equals("f254962d") || latestNode.f6.equals("4e0d8acb") || latestNode.f6.equals("8b232782") || latestNode.f6.equals("172d727c") ||latestNode.f6.equals("4fe6a4f8") || latestNode.f6.equals("36fbaa86") || latestNode.f6.equals("5e9cb693") || latestNode.f6.equals("f5ffd670") || latestNode.f6.equals("3872f636") || latestNode.f6.equals("1ffd3268")) {
+            return null;
+        }
         //Redundancy Anomaly
         boolean redundancy_flag = true;
         for (int i=0; i< tcfg.getNodes().size(); i++) {

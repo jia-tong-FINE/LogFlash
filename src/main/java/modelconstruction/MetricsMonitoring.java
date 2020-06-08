@@ -1,6 +1,8 @@
 package modelconstruction;
 
 import TCFGmodel.TCFGUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -9,6 +11,7 @@ public class MetricsMonitoring extends Thread {
 
     private boolean flag = true;
     private final TCFGUtil tcfgUtil = new TCFGUtil();
+    private final Logger LOG = LoggerFactory.getLogger(MetricsMonitoring.class);
     MovingVariance m = new MovingVariance(10);
 
     @Override
@@ -20,8 +23,11 @@ public class MetricsMonitoring extends Thread {
                 if (transferParamMatrix == null) continue;
                 double norm = transferParamMatrix.getNorm();
                 double var = m.add(norm);
-                if (var != 0.0 && var < 0.01) {
+                if (var != 0.0 && var < 0.005) {
                     tcfgUtil.saveTrainingFlag(0);
+                    tcfgUtil.saveDetectionFlag(1);
+                    LOG.info("反馈机制已开启！");
+                    LOG.info("异常检测已开启！");
                     cancel();
                 }
             } catch (NullPointerException ignored) {
