@@ -25,15 +25,32 @@ except Exception:
 app = Flask(__name__)
 
 
-@app.route('/Anomaly', methods=['GET'])
-def query_anomalies():
+@app.route('/Anomaly/Count', methods=['GET'])
+def query_total():
     try:
         db = pymysql.connect(host=db_conf['host'], user=db_conf['user'],
                              password=db_conf['password'], database=db_conf['database'])
         cursor = db.cursor()
-        cursor.execute(
-            "SELECT id,time,unixtime,level,component,content,template,paramlist,eventid,"
-            "anomalylogs,anomalyrequest,anomalywindow,anomalytype,anomalytemplates,logsequence_json FROM anomaly_log")
+        sql = '''SELECT count(*) FROM anomaly_log'''
+        cursor.execute(sql)
+    except Exception:
+        traceback.print_exc()
+        return None
+    result = cursor.fetchone()
+    return jsonify({'count': result[0]})
+
+
+@app.route('/Anomaly/<int:page>', methods=['GET'])
+def query_anomalies(page):
+    flag = page * 20
+    print(flag)
+    try:
+        db = pymysql.connect(host=db_conf['host'], user=db_conf['user'],
+                             password=db_conf['password'], database=db_conf['database'])
+        cursor = db.cursor()
+        sql = '''SELECT id,time,unixtime,level,component,content,template,paramlist,eventid,anomalylogs,anomalyrequest,anomalywindow,anomalytype,anomalytemplates,logsequence_json FROM anomaly_log LIMIT %s, 20'''
+        cursor.execute(sql, flag)
+
     except Exception:
         traceback.print_exc()
         return None
