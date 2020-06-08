@@ -45,19 +45,6 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
         Node rootNode = parseTree.value() == null || Config.valueStates.get("templateMap") == 1? tcfgUtil.getParseTreeRegion() : parseTree.value();
         Config.valueStates.put("templateMap",0);
         String[] regex = parameterTool.get("regex").split("&");
-//        String[] regex = new String[]{
-//                "@[a-z0-9]+$",
-//                "\\[[A-Za-z0-9\\-\\/]+\\]",
-//                "\\{.+\\}",
-//                "(\\d+\\.){3}\\d+",
-//                "(?<=[^A-Za-z0-9])(\\-?\\+?\\d+)(?=[^A-Za-z0-9])|[0-9]+$"
-//                // 上电
-//                "sftp://[^\\s]*",
-//                "\\{\"data\".*",
-//                "\\{\"result\".*",
-//                "(?<=[^A-Za-z0-9])(\\-?\\+?\\d+)(?=[^A-Za-z0-9])|[0-9]+$", // Numbers
-//                "(/[^\\s]*){2,}" // /mnt/flash/soft/bbu/
-//        };
         int depth = 4;
         int maxChild = 100;
         double st = 0.5;
@@ -95,7 +82,8 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
         out.collect(tuple);
         templateNum.add(1);
 //        parser.printTree(rootNode,0);
-        if (templateNum.getLocalValue() % 1000 == 0) {
+        if (parameterTool.getBoolean("printLog")) LOG.info(input.f1);
+        if (templateNum.getLocalValue() % parameterTool.getInt("logInterval") == 0) {
             LOG.info("已接收日志数量：{}", templateNum.getLocalValue());
             FileWriter oo = new FileWriter(new File(parameterTool.get("templateFilePath")));
             Map<String, String> map1 = new HashMap<>();
