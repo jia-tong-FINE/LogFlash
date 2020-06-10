@@ -47,6 +47,8 @@ services:
     image: file2stream
     ports:
       - "30833:30833"
+      - "30837:30837"
     hostname: file2stream
     volumes:
       - ./data:/data
+      - ./resources:/opt/resources
