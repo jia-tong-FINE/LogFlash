@@ -4,7 +4,7 @@ import time
 import traceback
 
 import pymysql
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -40,16 +40,19 @@ def query_total():
     return jsonify({'count': result[0]})
 
 
-@app.route('/Anomaly/<int:page>', methods=['GET'])
-def query_anomalies(page):
-    flag = page * 20
-    print(flag)
+@app.route('/Anomaly', methods=['GET'])
+def query_anomalies():
+    pageNum = request.args.get('page', '1')
+    pageSize = request.args.get('size', '20')
+    sortProperty = request.args.get('sortProperty', 'id')
+    num = int(pageNum) - 1
+    flag = num * int(pageSize)
     try:
         db = pymysql.connect(host=db_conf['host'], user=db_conf['user'],
                              password=db_conf['password'], database=db_conf['database'])
         cursor = db.cursor()
-        sql = '''SELECT id,time,unixtime,level,component,content,template,paramlist,eventid,anomalylogs,anomalyrequest,anomalywindow,anomalytype,anomalytemplates,logsequence_json FROM anomaly_log LIMIT %s, 20'''
-        cursor.execute(sql, flag)
+        sql = '''SELECT id,time,unixtime,level,component,content,template,paramlist,eventid,anomalylogs,anomalyrequest,anomalywindow,anomalytype,anomalytemplates,logsequence_json FROM anomaly_log ORDER BY %s LIMIT %d, %d '''
+        cursor.execute(sql % (sortProperty, flag, int(pageSize)))
 
     except Exception:
         traceback.print_exc()
@@ -75,6 +78,37 @@ def query_anomalies(page):
             'logsequence_json': row[14]
         })
     return jsonify(data)
+
+
+@app.route('/Anomaly/<int:aid>', methods=['GET'])
+def query_anomaly(aid):
+    try:
+        db = pymysql.connect(host=db_conf['host'], user=db_conf['user'],
+                             password=db_conf['password'], database=db_conf['database'])
+        cursor = db.cursor()
+        sql = '''SELECT id,time,unixtime,level,component,content,template,paramlist,eventid,anomalylogs,anomalyrequest,anomalywindow,anomalytype,anomalytemplates,logsequence_json FROM anomaly_log WHERE id = %d'''
+        cursor.execute(sql % aid)
+    except Exception:
+        traceback.print_exc()
+        return None
+    result = cursor.fetchone()
+    return jsonify({
+        'id': result[0],
+        'time': result[1],
+        'unix_time': result[2],
+        'level': result[3],
+        'component': result[4],
+        'content': result[5],
+        'template': result[6],
+        'param_list': result[7],
+        'event_id': result[8],
+        'anomaly_logs': result[9],
+        'anomaly_request': result[10],
+        'anomaly_window': result[11],
+        'anomaly_type': result[12],
+        'anomaly_templates': result[13],
+        'logsequence_json': result[14]
+    })
 
 
 @app.route('/TCFG', methods=['GET'])
