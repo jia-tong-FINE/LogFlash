@@ -41,10 +41,13 @@ public class FaultDiagnosisMode2 implements FaultDiagnosis{
         public void process(String s, Context context, Iterable<Tuple7<String, String, String, String, String, String, String>> input, Collector<String> out) throws Exception {
             ParameterTool parameterTool = ParameterTool.fromMap(Config.parameter);
             long slidingWindowStep = parameterTool.getLong("slidingWindowStep");
+            TCFGUtil tcfgUtil = new TCFGUtil();
             TCFG tempTcfgValueState = tcfgValueState.value();
             //Initialize TCFG and counter
             if (tempTcfgValueState == null || Config.valueStates.get("tcfgValueState") == 1) {
-                tempTcfgValueState = new TCFG();
+                tempTcfgValueState = tcfgUtil.getTCFGFromMemory();
+                System.out.println("-----+++++++");
+                System.out.println(tempTcfgValueState.getNodes());
                 tcfgValueState.update(tempTcfgValueState);
                 Config.valueStates.put("tcfgValueState",0);
             }
@@ -57,7 +60,6 @@ public class FaultDiagnosisMode2 implements FaultDiagnosis{
             //Update tempTcfgValueState from share memory
             if (counter.modResult(parameterTool.getInt("TCFGReadInterval")) == 0) {
                 try {
-                    TCFGUtil tcfgUtil = new TCFGUtil();
                     tempTcfgValueState = tcfgUtil.getTCFGFromMemory();
                     tcfgValueState.update(tempTcfgValueState);
                 } catch (Exception e) {
@@ -65,7 +67,6 @@ public class FaultDiagnosisMode2 implements FaultDiagnosis{
                 }
             }
             counterValueState.update(counter);
-            TCFGUtil tcfgUtil = new TCFGUtil();
             int detectionFlag = tcfgUtil.getDetectionFlag();
             if (detectionFlag == 1) {
                 //Start Failure Diagnosis Process
@@ -92,6 +93,10 @@ public class FaultDiagnosisMode2 implements FaultDiagnosis{
                             }
                             //store and output anomalies
                             mysqlUtil.insertAnomaly(anomaly);
+                            System.out.println("=========================");
+                            System.out.println(anomaly.getAnomalyType());
+                            System.out.println(anomaly.getAnomalyLogId());
+                            System.out.println("=========================");
                         }
                     }
                 }

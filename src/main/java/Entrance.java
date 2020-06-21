@@ -1,3 +1,4 @@
+import TCFGmodel.TCFGUtil;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.TimeCharacteristic;
@@ -12,6 +13,8 @@ import workflow.WorkFlowMode1;
 import workflow.WorkFlowMode2;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 public class Entrance {
@@ -27,6 +30,27 @@ public class Entrance {
             case "file":
                 String input_dir = String.format("src/main/resources/%s/raw", parameter.get("logData"));
                 return env.readTextFile(input_dir + File.separator + parameter.get("logName"));
+            case "files":
+//                TCFGUtil tcfgUtil = new TCFGUtil();
+//                try {
+//                    tcfgUtil.cleanShareMemory();
+//                }catch (Exception e){
+//
+//                }
+                String dir = "E:/中兴项目/实验/上电阶段数据_191219";
+                List filelist = new ArrayList();
+                List<File> newfilelist = getFileList(filelist,dir);
+                for (File file: newfilelist) {
+
+                    DataStreamSource<String> dataStream = env.readTextFile(file.getAbsolutePath());
+                    System.out.println(file.getAbsolutePath());
+                    try {
+                        WorkFlow workFlow2 = new WorkFlowMode2();
+                        workFlow2.workflow(env, dataStream, parameter);
+                    }catch (Exception e){
+                        System.out.println("error");
+                    }
+                }
             case "rabbitmq":
                 RMQConnectionConfig connectionConfig = new RMQConnectionConfig.Builder()
                         .setHost(parameter.get("rabbitmqHost"))
@@ -71,5 +95,22 @@ public class Entrance {
         }
     }
 
+    public static List<File> getFileList(List filelist,String strPath) {
+        File dir = new File(strPath);
+        File[] files = dir.listFiles(); // 该文件目录下文件全部放入数组
+        if (files != null) {
+            for (int i = 0; i < files.length; i++) {
+                String fileName = files[i].getName();
+                if (files[i].isDirectory()) { // 判断是文件还是文件夹
+                    getFileList(filelist,files[i].getAbsolutePath()); // 获取文件绝对路径
+                } else if (fileName.startsWith("swm_vmp-")) { // 判断文件名是否以.avi结尾
+                    filelist.add(files[i]);
+                } else {
+                    continue;
+                }
+            }
+        }
+        return filelist;
+    }
 }
 

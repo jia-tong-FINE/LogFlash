@@ -26,6 +26,8 @@ public class MetricsMonitoring extends Thread {
                 if (var != 0.0 && var < 0.005) {
                     tcfgUtil.saveTrainingFlag(0);
                     tcfgUtil.saveDetectionFlag(1);
+                    System.out.println("反馈机制已开启！");
+                    System.out.println("异常检测已开启！");
                     LOG.info("反馈机制已开启！");
                     LOG.info("异常检测已开启！");
                     cancel();

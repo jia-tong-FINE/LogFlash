@@ -88,6 +88,7 @@ public class SuspiciousRegionMonitor {
                         long anomalyTime = Long.parseLong((String) anomaly.getAnomalyLog().f0);
                         //beyond suspicious time window
                         if (inTime - anomalyTime > suspiciousTimeForLatencyAnomaly) {
+                            tuningRegion.addAnomalyToQueue(anomaly);
                             suspiciousRegion.latencyAnomalyQueue.poll();
                         } else {
                             break;
@@ -99,6 +100,7 @@ public class SuspiciousRegionMonitor {
                         long anomalyTime = Long.parseLong((String) anomaly.getAnomalyLog().f0);
                         //beyond suspicious time window
                         if (inTime - anomalyTime > suspiciousTimeForRedundancyAnomaly) {
+                            tuningRegion.addAnomalyToQueue(anomaly);
                             suspiciousRegion.redundancyAnomalyQueue.poll();
                         } else {
                             break;

@@ -33,7 +33,7 @@ public class TCFGConstructor {
                 TransferParamMatrix transferParamMatrix = tcfgUtil.getMatrixFromMemory();
                 TCFG tcfg = new TCFG();
                 tcfg.paramMatrix2TCFG(transferParamMatrix, parameterTool.getLong("delta"));
-                //handle human feedback
+                //handle human feedback(Lack of testing)
                 List<String> whiteList = tuningRegion.getEventWhiteList();
                 List<TCFG.Edge> edges = tcfg.getEdges();
                 for (String whiteEventID : whiteList) {

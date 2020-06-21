@@ -133,10 +133,11 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
         LOG = LoggerFactory.getLogger(Parse.class);
         TCFG.sm = new ShareMemory(Config.parameter.get("shareMemoryFilePath"), "TCFG");
         tcfgUtil = new TCFGUtil();
+        //tcfgUtil.cleanShareMemory();
         tcfgUtil.initiateShareMemory();
         tcfgUtil.initiateDatabase();
-        metricsMonitoring = new MetricsMonitoring();
-        metricsMonitoring.start();
+        //metricsMonitoring = new MetricsMonitoring();
+        //metricsMonitoring.start();
         commandListener = new CommandListener();
         commandListener.start();
     }
@@ -149,7 +150,7 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
 //        Map<String, String> map = new HashMap<>();
 //        map = parser.saveTemplate(parseTree.value(), 0, map);
 //        sql.insertTemplate(map);
-        metricsMonitoring.cancel();
+        //metricsMonitoring.cancel();
         commandListener.cancel();
     }
 }

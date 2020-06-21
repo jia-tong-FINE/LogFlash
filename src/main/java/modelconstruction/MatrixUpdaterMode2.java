@@ -74,12 +74,14 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
         public void process(String s, Context context, Iterable<Tuple7<String, String, String, String, String, String, String>> input, Collector<String> out) throws Exception {
 
             ParameterTool parameterTool = ParameterTool.fromMap(Config.parameter);
+            TCFGUtil tcfgUtil = new TCFGUtil();
             long slidingWindowStep = parameterTool.getLong("slidingWindowStep");
 
             //Initialize paramMatrix and counter
             TransferParamMatrix tempTransferParamMatrix = transferParamMatrix.value();
             if (tempTransferParamMatrix == null || Config.valueStates.get("transferParamMatrix") == 1) {
-                tempTransferParamMatrix = new TransferParamMatrix();
+                tempTransferParamMatrix = tcfgUtil.getMatrixFromMemory();
+                //tempTransferParamMatrix = new TransferParamMatrix();
                 transferParamMatrix.update(tempTransferParamMatrix);
                 Config.valueStates.put("transferParamMatrix",0);
             }
@@ -90,7 +92,6 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
             //Update transferParamMatrix in share memory
             if (counter.modResult(parameterTool.getInt("matrixWriteInterval")) == 0) {
                 try {
-                    TCFGUtil tcfgUtil = new TCFGUtil();
                     //Delete expired templates
                     Map<String,String> templateUpdateMap = tcfgUtil.getTemplateUpdateRegion();
                     for (String key: templateUpdateMap.keySet()) {
@@ -113,6 +114,8 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
                         }
                         if (anomaly.getAnomalyType() == "Redundancy") {
                             tempTransferParamMatrix.addNewTemplate((String)in.f6,(String)in.f4,parameterTool.getDouble("alpha"));
+                            System.out.println("add redundant template");
+                            System.out.println(in.f6);
                         }
                     }
                     //update share memory
@@ -131,7 +134,6 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
 
 //            int trainingFlag = parameterTool.getInt("trainingFlag");
             //添加一个线程监控matrix的Frobenius norm，如果该数值保持稳定则将trainingFlag调整为0
-            TCFGUtil tcfgUtil = new TCFGUtil();
             int trainingFlag = tcfgUtil.getTrainingFlag();
             //TCFG Construction process
             List<String> priorEventIDList = tempTransferParamMatrix.getEventIDList();
@@ -146,6 +148,7 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
                     //add new template into the matrix during training
                     if (trainingFlag == 1 && !priorEventIDList.contains(in.f6)) {
                         tempTransferParamMatrix.addNewTemplate((String) in.f6, (String) in.f4, parameterTool.getDouble("alpha"));
+                        priorEventIDList.add((String) in.f6);
                     }
                     long inTime = Long.parseLong((String) in.f0);
                     //add new template to matrix update process during training
