@@ -61,4 +61,11 @@ else
   usage
 fi
 
+if [ -d models  ];then
+  echo dir exist
+else
+  mkdir models
+  chmod 777 models
+fi
+
 docker build --build-arg flink_dist="${FLINK_DIST}" --build-arg job_artifacts="${JOB_ARTIFACTS_DIST}" -t "${IMAGE_NAME}" -f Dockerfile.logflash .

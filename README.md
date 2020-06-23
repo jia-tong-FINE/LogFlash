@@ -26,20 +26,15 @@
 5. 通过resources/config.propeties中的sourceName指定数据输入形式
     - file：将日志文件放到resources目录下，格式为resources/<日志类型名>/raw/<日志文件>
     - socket：将日志文件放到data目录下，并在logFilePaths中写入日志路径，以/data开头
-
-6. 创建model目录并修改权限
-    ```bash
-   mkdir models && chmod 777 models/ 
-    ```
    
-7. 创建web后端服务器镜像
+6. 创建web后端服务器镜像
     - web服务器使用单独的配置文件连接数据库，创建镜像前，如果修改了MySQL用户名与密码，则要编辑db-server.json配置文件中的用户名与密码与config.properties中一致
     
     ```bash
     docker build -t dbserver -f Dockerfile.dbserver .
     ```
     
-8. 启动web前端
+7. 启动web前端
    ```bash
    # 安装依赖
    cd LogFlash_web && npm install --registry=https://registry.npm.taobao.org
@@ -47,7 +42,7 @@
    nohup npm run dev >web.log 2>&1 &
    ```
    
-9. 启动容器
+8. 启动容器
    ```bash
    cd .. && FLINK_JOB=Entrance docker-compose up -d
    ```
