@@ -76,11 +76,11 @@ public class MysqlUtil {
             LOG.info("begin createTCFGTable...");
             Class.forName(JDBC_DRIVER);
             Connection dbConnection = DriverManager.getConnection(connectionString, parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
-            String createTableSQL = "CREATE TABLE IF NOT EXISTS TCFG(id INT(11) PRIMARY KEY NOT NULL,TCFG_json LONGTEXT)";
+            String createTableSQL = "CREATE TABLE IF NOT EXISTS tcfg(id INT(11) PRIMARY KEY NOT NULL,TCFG_json LONGTEXT)";
             PreparedStatement preparedStatement = dbConnection.prepareStatement(createTableSQL);
             preparedStatement.executeUpdate();
             preparedStatement.close();
-            String insertTCFGSQL = "insert into TCFG (id,TCFG_json) values(1,null) ON DUPLICATE KEY UPDATE TCFG_json=null";
+            String insertTCFGSQL = "insert into tcfg (id,TCFG_json) values(1,null) ON DUPLICATE KEY UPDATE TCFG_json=null";
             PreparedStatement preparedStatement1 = dbConnection.prepareStatement(insertTCFGSQL);
             preparedStatement1.executeUpdate();
             preparedStatement1.close();
@@ -103,7 +103,7 @@ public class MysqlUtil {
             conn = DriverManager.getConnection(connectionString, parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
             // 执行查询
             stmt = conn.createStatement();
-            String sql = "update TCFG set TCFG_json = ? where id=1";
+            String sql = "update tcfg set TCFG_json = ? where id=1";
             ps = conn.prepareStatement(sql);
             ps.setString(1, tcfg);
             ps.executeUpdate();
@@ -138,7 +138,7 @@ public class MysqlUtil {
             conn = DriverManager.getConnection(connectionString, parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
             // 执行查询
             stmt = conn.createStatement();
-            String sql = "select TCFG_json from TCFG where id=1";
+            String sql = "select TCFG_json from tcfg where id=1";
             ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
             String res = "";
@@ -441,7 +441,7 @@ public class MysqlUtil {
             PreparedStatement preparedStatement = dbConnection.prepareStatement(createTableSQL);
             preparedStatement.executeUpdate();
             preparedStatement.close();
-            String insertTCFGSQL = "insert into TCFG (id,TCFG_json) values(1,null) ON DUPLICATE KEY UPDATE TCFG_json=null";
+            String insertTCFGSQL = "insert into tcfg (id,TCFG_json) values(1,null) ON DUPLICATE KEY UPDATE TCFG_json=null";
             PreparedStatement preparedStatement1 = dbConnection.prepareStatement(insertTCFGSQL);
             preparedStatement1.executeUpdate();
             preparedStatement1.close();
