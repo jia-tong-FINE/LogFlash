@@ -31,6 +31,7 @@ RUN set -x && \
 
 COPY docker-entrypoint.sh /
 COPY wait-for.sh /
+Run chmod 775 /docker-entrypoint.sh
 Run chmod 775 /wait-for.sh
 
 USER flink

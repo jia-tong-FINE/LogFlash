@@ -1,7 +1,10 @@
-FROM python:3.7
-COPY db* /app/
-COPY requirements.txt /app/
-WORKDIR /app
-RUN pip3 install --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
-EXPOSE 30855
-CMD ["python", "db-server.py"]
+FROM openjdk:8-jre-alpine
+ADD logflashdb.jar /opt
+
+COPY dbmanager-entrypoint.sh /
+COPY wait-for.sh /
+Run chmod 775 /dbmanager-entrypoint.sh
+Run chmod 775 /wait-for.sh
+
+ENTRYPOINT ["/dbmanager-entrypoint.sh"]
+CMD ["--help"]

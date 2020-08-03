@@ -1,9 +1,11 @@
 package modelconstruction;
 
 import TCFGmodel.TCFGUtil;
+import org.apache.flink.api.java.utils.ParameterTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -16,6 +18,12 @@ public class MetricsMonitoring extends Thread {
 
     @Override
     public void run() {
+        try {
+            flag = Boolean.parseBoolean(ParameterTool.fromPropertiesFile("src/main/resources/config.properties").toMap().get("metricsMonitoring"));
+            LOG.info("{}",flag);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         while (flag) {
             try {
                 Thread.sleep(300);

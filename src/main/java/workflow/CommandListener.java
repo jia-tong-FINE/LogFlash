@@ -33,7 +33,7 @@ public class CommandListener extends Thread {
     };
     public Route postConfig = (Request request, Response response) -> {
         response.header("Access-Control-Allow-Origin", "*");
-        String config = request.queryParams("config");
+        String config = request.body();
         //update system configuration
         Map<String, Object> configMap = JSON.parseObject(config,Map.class);
         for (Map.Entry<String, Object> obj : configMap.entrySet()){
@@ -47,7 +47,7 @@ public class CommandListener extends Thread {
     public Route postCommands = (Request request, Response response) -> {
         response.header("Access-Control-Allow-Origin", "*");
         //parse CommandStr and execute system updates with workflow.Controller
-        String commandStr = request.queryParams("commands");
+        String commandStr = request.body();
         Map commandMap = JSON.parseObject(commandStr, Map.class);
         Controller controller = new Controller();
         controller.executeCommands(commandMap);

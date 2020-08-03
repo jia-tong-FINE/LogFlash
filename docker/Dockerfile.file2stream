@@ -1,5 +1,3 @@
 FROM openjdk:11.0.7-jre-slim
 ADD X2Stream.jar /opt
-RUN mkdir /data
-ADD data /data
 CMD ["java", "-jar", "/opt/X2Stream.jar"]
