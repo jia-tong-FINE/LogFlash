@@ -42,7 +42,17 @@ public class IndenpendencyFilter {
             double max_transition_prob = 0;
             int max_log_id = leftList.size();
             for (int i = leftList.size()-1; i >=0 ; i--) {
-                double alphaij = paramMatrix.get(leftList.get(i).f6).get(tempLog.f6);
+//                System.out.println("++++++++++++++++++");
+//                System.out.println(leftList.get(i).f6);
+//                System.out.println(tempLog.f6);
+//                System.out.println(paramMatrix.get(leftList.get(i).f6).get(tempLog.f6));
+//                System.out.println("++++++++++++++++++");
+                double alphaij = 0;
+                if (paramMatrix.containsKey(leftList.get(i).f6)) {
+                    if (paramMatrix.get(leftList.get(i).f6).containsKey(tempLog.f6)) {
+                        alphaij = paramMatrix.get(leftList.get(i).f6).get(tempLog.f6);
+                    }
+                }
                 double prob_alphaij = calProbability(Double.valueOf((String)tempLog.f0), Double.valueOf((String)leftList.get(i).f0),alphaij,timeWindow,delta);
 
                 if (max_transition_prob < prob_alphaij) {

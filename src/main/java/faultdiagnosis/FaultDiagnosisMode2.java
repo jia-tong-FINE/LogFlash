@@ -46,8 +46,12 @@ public class FaultDiagnosisMode2 implements FaultDiagnosis{
             //Initialize TCFG and counter
             if (tempTcfgValueState == null || Config.valueStates.get("tcfgValueState") == 1) {
                 tempTcfgValueState = tcfgUtil.getTCFGFromMemory();
-                System.out.println("-----+++++++");
-                System.out.println(tempTcfgValueState.getNodes());
+//                System.out.println("-----+++++++");
+//                for (TCFG.Node node:tempTcfgValueState.getNodes()) {
+//                    System.out.println(node);
+//                    System.out.println(node.getNode_id());
+//                }
+
                 tcfgValueState.update(tempTcfgValueState);
                 Config.valueStates.put("tcfgValueState",0);
             }
@@ -93,10 +97,11 @@ public class FaultDiagnosisMode2 implements FaultDiagnosis{
                             }
                             //store and output anomalies
                             mysqlUtil.insertAnomaly(anomaly);
-                            System.out.println("=========================");
-                            System.out.println(anomaly.getAnomalyType());
-                            System.out.println(anomaly.getAnomalyLogId());
-                            System.out.println("=========================");
+//                            System.out.println("=========================");
+//                            System.out.println(anomaly.getAnomalyType());
+//                            System.out.println(anomaly.getAnomalyLogId());
+//                            System.out.println(anomaly.getAnomalyLogList());
+//                            System.out.println("=========================");
                         }
                     }
                 }
@@ -191,6 +196,15 @@ public class FaultDiagnosisMode2 implements FaultDiagnosis{
         if (latestNode.f6.equals("f80a2e40")||latestNode.f6.equals("4e81c689")|| latestNode.f6.equals("3a294bba") || latestNode.f6.equals("c1be6b3b") || latestNode.f6.equals("f254962d") || latestNode.f6.equals("4e0d8acb") || latestNode.f6.equals("8b232782") || latestNode.f6.equals("172d727c") ||latestNode.f6.equals("4fe6a4f8") || latestNode.f6.equals("36fbaa86") || latestNode.f6.equals("5e9cb693") || latestNode.f6.equals("f5ffd670") || latestNode.f6.equals("3872f636") || latestNode.f6.equals("1ffd3268")) {
             return null;
         }
+        if (latestNode.f3.toString().contains("[CheckCpu]")||latestNode.f3.toString().startsWith("send")||latestNode.f3.toString().startsWith("Send")||latestNode.f3.toString().contains("success")||latestNode.f3.toString().contains("SUCC")||latestNode.f3.toString().contains("succ")||latestNode.f3.toString().contains("OK")||latestNode.f3.toString().contains("Start")||latestNode.f6.equals("58823732")||latestNode.f6.equals("b51faa17")||latestNode.f6.equals("d68f2498")||latestNode.f6.equals("c4d253a2")||latestNode.f6.equals("89165d37")||latestNode.f6.equals("88234ff9")||latestNode.f6.equals("caeb21e1")
+        ||latestNode.f6.equals("8703810f")||latestNode.f6.equals("9d3aaef1")||latestNode.f6.equals("bcdb661f")||latestNode.f6.equals("86bfa606")||latestNode.f6.equals("b00c60d3")||latestNode.f6.equals("223cd98b")||latestNode.f6.equals("3e9c7d41")||latestNode.f6.equals("58750f7e")||latestNode.f6.equals("b639cfc5")||latestNode.f6.equals("84cd6aa2")||latestNode.f6.equals("1711e72b")||latestNode.f6.equals("54ae584d")||latestNode.f6.equals("73b4fe33")||latestNode.f6.equals("f99dedd9")||latestNode.f6.equals("e7e3bfe4")||latestNode.f6.equals("59f094d4")||latestNode.f6.equals("ab2c0027")) {
+            //ZTE swm log data filtering
+            return null;
+        }
+        if (latestNode.f6.equals("98cda747")||latestNode.f6.equals("d65e5b28")|| latestNode.f6.equals("1b82b726") || latestNode.f6.equals("84e947d0") || latestNode.f6.equals("8b67a5e2") || latestNode.f6.equals("aa98eebb") || latestNode.f6.equals("3a65eb9d") || latestNode.f6.equals("4afb704a") ||latestNode.f6.equals("e38c835d") || latestNode.f6.equals("cf5afd05") || latestNode.f6.equals("b992222b") || latestNode.f6.equals("efa98ab9")) {
+            //ZTE OpenStack log data
+            return null;
+        }
         //Redundancy Anomaly
         boolean redundancy_flag = true;
         for (int i=0; i< tcfg.getNodes().size(); i++) {
@@ -205,7 +219,6 @@ public class FaultDiagnosisMode2 implements FaultDiagnosis{
         }
         //Sequence Anomaly
         boolean is_latency = false;
-        boolean end_node_flag = false;
         if (tempListId.size() < 2) {
             return null;
         }
@@ -225,7 +238,7 @@ public class FaultDiagnosisMode2 implements FaultDiagnosis{
             }
         }
         //latency anomaly
-        if (is_latency == true) {
+        if (is_latency) {
             List<Tuple7> tempList_l = new ArrayList<>();
             for (Tuple7 tuple: tempList) {
                 tempList_l.add(tuple);
@@ -233,19 +246,15 @@ public class FaultDiagnosisMode2 implements FaultDiagnosis{
             Anomaly anomaly = new Anomaly((String) latestNode.f6,latestNode,tempList,detectSuspiciousRequest(tcfg,tempList_l),"Latency");
             return anomaly;
         }
-        end_node_flag = true;
 
-        if (end_node_flag) {
-            List<Tuple7> tempList_l = new ArrayList<>();
-            for (Tuple7 tuple: tempList) {
-                tempList_l.add(tuple);
-            }
-            List<Tuple7> suspiciousRequest = detectSuspiciousRequest(tcfg,tempList_l);
-            suspiciousRequest.add(tempList.get(tempList.size()-1));
-            Anomaly anomaly = new Anomaly((String) latestNode.f6,latestNode,tempList,suspiciousRequest,"Sequence");
-            return anomaly;
+        List<Tuple7> tempList_l = new ArrayList<>();
+        for (Tuple7 tuple: tempList) {
+            tempList_l.add(tuple);
         }
-        return null;
+        List<Tuple7> suspiciousRequest = detectSuspiciousRequest(tcfg,tempList_l);
+        suspiciousRequest.add(tempList.get(tempList.size()-1));
+        Anomaly anomaly = new Anomaly((String) latestNode.f6,latestNode,tempList,suspiciousRequest,"Sequence");
+        return anomaly;
     }
 
     public Anomaly interruptionFaultDiagnosisProcess (TCFG tcfg, Tuple7 lastNode) {

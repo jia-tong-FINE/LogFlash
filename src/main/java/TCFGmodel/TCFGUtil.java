@@ -1,5 +1,7 @@
 package TCFGmodel;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import dao.MysqlUtil;
@@ -107,8 +109,8 @@ public class TCFGUtil {
         saveTuningRegionInMemory();
         saveTemplateUpdateRegion(templateUpdateRegion);
         saveParseTreeRegion(rootNode);
-        saveTrainingFlag(1);
-        saveDetectionFlag(0);
+        saveTrainingFlag(0);
+        saveDetectionFlag(1);
     }
     public void cleanShareMemory() throws Exception {
         TransferParamMatrix tpm = new TransferParamMatrix();
@@ -136,7 +138,20 @@ public class TCFGUtil {
         int tcfgSize = parameterTool.getInt("TCFGSize");
         byte[] b = new byte[tcfgSize];
         TCFG.sm.read(2, tcfgSize, b);
-        TCFG tcfg = JSONObject.parseObject(new String(b,"utf-8").trim(), TCFG.class);
+        JSONObject jsonObject = JSON.parseObject(new String(b,"utf-8").trim());
+        TCFG tcfg = new TCFG();
+        JSONArray jsonNodesArray = jsonObject.getJSONArray("nodes");
+        Iterator iter1 = jsonNodesArray.iterator();
+        while(iter1.hasNext()) {
+            JSONObject nodeID = (JSONObject)iter1.next();
+            tcfg.addNode((String)nodeID.get("node_id"));
+        }
+        JSONArray jsonEdgesArray = jsonObject.getJSONArray("edges");
+        Iterator iter2 = jsonEdgesArray.iterator();
+        while(iter2.hasNext()) {
+            JSONObject edgeInfo = (JSONObject)iter2.next();
+            tcfg.addEdge(edgeInfo.getJSONObject("in_node").get("node_id").toString(),edgeInfo.getJSONObject("out_node").get("node_id").toString(),edgeInfo.getLong("time_weight"));
+        }
         return tcfg;
     }
     public void saveTCFGInMemory(TCFG tcfg) throws Exception{
@@ -249,5 +264,10 @@ public class TCFGUtil {
     public void saveDetectionFlag(int flag) throws Exception{
         String trainingFlag = JSONObject.toJSONString(flag);
         TCFG.sm.write(1, 1, trainingFlag.getBytes("UTF-8"));
+    }
+
+    public static void main(String args[]) {
+        TCFGUtil tcfgUtil = new TCFGUtil();
+        tcfgUtil.initiateDatabase();
     }
 }

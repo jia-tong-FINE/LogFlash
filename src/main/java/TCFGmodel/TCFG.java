@@ -65,6 +65,7 @@ public class TCFG {
 
         Map<String, Map<String, Double>> paramMatrix = transferParamMatrix.getParamMatrix();
         Map<String, Map<String, Long>> timeMatrix = transferParamMatrix.getTimeMatrix();
+
         TCFGUtil tcfgUtil = new TCFGUtil();
         for (String key1: paramMatrix.keySet()) {
             TCFG.Node in_node = new TCFG.Node();
@@ -79,20 +80,21 @@ public class TCFG {
                     nodes.add(out_node);
                 }
                 double alphaji = paramMatrix.get(key1).get(key2);
-                double transitionProb = tcfgUtil.calDefinitIntegral(delta, 2*delta, 100, alphaji, delta);
-                if (transitionProb > 0.1) {
+                //double transitionProb = tcfgUtil.calDefinitIntegral(delta, 2*delta, 100, alphaji, delta);
+                if (alphaji > 0.1) {
                     TCFG.Node in_node_edge = new TCFG.Node();
-                    in_node.node_id = key1;
+                    in_node_edge.node_id = key1;
                     TCFG.Node out_node_edge = new TCFG.Node();
-                    out_node.node_id = key2;
+                    out_node_edge.node_id = key2;
                     TCFG.Edge edge = new TCFG.Edge();
                     edge.in_node = in_node_edge;
                     edge.out_node = out_node_edge;
-                    edge.time_weight = timeMatrix.get(in_node.node_id).get(out_node.node_id);
+                    edge.time_weight = timeMatrix.get(key1).get(key2);
                     edges.add(edge);
                 }
             }
         }
+
     }
 
 
@@ -112,7 +114,20 @@ public class TCFG {
         this.edges = edges;
     }
 
-    public static void main() {
-
+    public void addNode(String nodeID) {
+        TCFG.Node node = new TCFG.Node();
+        node.node_id = nodeID;
+        nodes.add(node);
+    }
+    public void addEdge(String inNodeID,String outNodeID,long timeWeight) {
+        TCFG.Node inNode = new TCFG.Node();
+        TCFG.Node outNode = new TCFG.Node();
+        inNode.node_id = inNodeID;
+        outNode.node_id = outNodeID;
+        TCFG.Edge edge = new TCFG.Edge();
+        edge.in_node = inNode;
+        edge.out_node = outNode;
+        edge.time_weight = timeWeight;
+        edges.add(edge);
     }
 }

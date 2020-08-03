@@ -106,6 +106,7 @@ public class MysqlUtil {
             String sql = "update TCFG set TCFG_json = ? where id=1";
             ps = conn.prepareStatement(sql);
             ps.setString(1, tcfg);
+            //update database
             ps.executeUpdate();
 
             // 完成后关闭

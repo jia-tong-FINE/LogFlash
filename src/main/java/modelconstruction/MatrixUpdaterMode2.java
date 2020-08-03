@@ -50,6 +50,10 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
                 elementk.f0 = String.valueOf(Long.parseLong((String)elementi.f0) - delta -1);
             }
             Map<String, Map<String, Double>> paramMatrix = transferParamMatrix.getParamMatrix();
+//            System.out.println("-----------------");
+//            System.out.println(paramMatrix.containsKey(elementk.f6) + "     " + elementk.f6);
+//            System.out.println(paramMatrix.containsKey(elementi.f6) + "     " + elementi.f6);
+//            System.out.println("-----------------");
             double alphaki = paramMatrix.get(elementk.f6).get(elementi.f6).doubleValue();
             sum = sum + alphaki/((TCFGUtil.minMax(Long.parseLong((String)elementi.f0) - Long.parseLong((String)elementk.f0),delta,timeWindow))*delta+delta);
         }
@@ -81,6 +85,9 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
             TransferParamMatrix tempTransferParamMatrix = transferParamMatrix.value();
             if (tempTransferParamMatrix == null || Config.valueStates.get("transferParamMatrix") == 1) {
                 tempTransferParamMatrix = tcfgUtil.getMatrixFromMemory();
+//                System.out.println("-----+++++++");
+//                System.out.println(tempTransferParamMatrix.getEventIDList());
+//                System.out.println(tempTransferParamMatrix.getParamMatrix());
                 //tempTransferParamMatrix = new TransferParamMatrix();
                 transferParamMatrix.update(tempTransferParamMatrix);
                 Config.valueStates.put("transferParamMatrix",0);
@@ -132,9 +139,10 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
             }
             counterValueState.update(counter);
 
-//            int trainingFlag = parameterTool.getInt("trainingFlag");
+//           int trainingFlag = parameterTool.getInt("trainingFlag");
             //添加一个线程监控matrix的Frobenius norm，如果该数值保持稳定则将trainingFlag调整为0
             int trainingFlag = tcfgUtil.getTrainingFlag();
+            //System.out.println(tempTransferParamMatrix.checkConsistency());
             //TCFG Construction process
             List<String> priorEventIDList = tempTransferParamMatrix.getEventIDList();
             List<Tuple7> tempList = new ArrayList<>();
@@ -148,7 +156,6 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
                     //add new template into the matrix during training
                     if (trainingFlag == 1 && !priorEventIDList.contains(in.f6)) {
                         tempTransferParamMatrix.addNewTemplate((String) in.f6, (String) in.f4, parameterTool.getDouble("alpha"));
-                        priorEventIDList.add((String) in.f6);
                     }
                     long inTime = Long.parseLong((String) in.f0);
                     //add new template to matrix update process during training
@@ -166,10 +173,20 @@ public class MatrixUpdaterMode2 implements MatrixUpdater {
                             if (slidingWindowList.indexOf(tuple) == slidingWindowList.size() - 1) {
                                 break;
                             }
+                            if (!tempTransferParamMatrix.getParamMatrix().containsKey(in.f6)) {
+                                break;
+                            }
                             //update the time matrix during training
                             if (trainingFlag == 1) {
                                 tempTransferParamMatrix.updateTimeMatrix((String) in.f6, (String) tuple.f6, inTime - Long.parseLong((String) tuple.f0));
                             }
+//                            System.out.println("+++++++++++++++++++++");
+//                            System.out.println("in:" + in.f6);
+//                            System.out.println("last node:" + slidingWindowList.get(slidingWindowList.size()-1).f6);
+//                            System.out.println(tempTransferParamMatrix.getEventIDList().contains(in.f6));
+//                            System.out.println(tempTransferParamMatrix.getParamMatrix().containsKey(in.f6));
+//                            System.out.println("+++++++++++++++++++++");
+
                             double gradient = TCFGConstructer.calGradientForInfected(inTime, Long.parseLong((String) tuple.f0), tempTransferParamMatrix, slidingWindowList, slidingWindowStep, parameterTool.getLong("delta"));
                             if (gradient > parameterTool.getDouble("gradLimitation")) {
                                 gradient = parameterTool.getDouble("gradLimitation");

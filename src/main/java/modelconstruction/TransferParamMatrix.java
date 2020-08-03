@@ -1,5 +1,4 @@
 package modelconstruction;
-
 import java.io.Serializable;
 import java.util.*;
 
@@ -43,6 +42,12 @@ public class TransferParamMatrix implements Serializable {
     }
 
     public void updateTimeMatrix(String eventi, String eventj, long timeWeight) {
+        if (!timeMatrix.containsKey(eventj)) {
+            return;
+        }else if (!timeMatrix.get(eventj).containsKey(eventi)){
+            return;
+        }
+
         if (timeMatrix.get(eventj).get(eventi) >= timeWeight) {
             return;
         }
@@ -56,6 +61,8 @@ public class TransferParamMatrix implements Serializable {
         boolean flag = true;
         try {
             if (paramMatrix.size() != gradMatrix.size()) {
+                flag = false;
+            }else if (eventIDList.size() != paramMatrix.size()) {
                 flag = false;
             }
         }catch (Exception e) {
@@ -120,18 +127,19 @@ public class TransferParamMatrix implements Serializable {
         paramMatrix.put(EventID,newParamColumn);
         gradMatrix.put(EventID,newGradColumn);
         timeMatrix.put(EventID,newTimeColumn);
+//        if (!checkConsistency()) {
+//            System.out.println("add error" + EventID);
+//            System.out.println(eventIDList);
+//            System.out.println(paramMatrix.size());
+//            System.out.println(gradMatrix.size());
+//            System.out.println(timeMatrix.size());
+//        }
     }
 
     //delete expired template
     public void deleteExpiredTemplate(String EventID) {
         if (!eventIDList.contains(EventID)) return;
-        Iterator<String> eventIDIt = eventIDList.iterator();
-        while (eventIDIt.hasNext()) {
-            if (eventIDIt.next() == EventID) {
-                eventIDIt.remove();
-            }
-        }
-        eventIDList.remove(EventID);
+        eventIDList.remove(eventIDList.indexOf(EventID));
         eventIDandContent.remove(EventID);
         paramMatrix.remove(EventID);
         gradMatrix.remove(EventID);
@@ -142,7 +150,9 @@ public class TransferParamMatrix implements Serializable {
             gradMatrix.get(inNode).remove(EventID);
             timeMatrix.get(inNode).remove(EventID);
         }
-
+        if (!checkConsistency()) {
+            System.out.println("delete error" + EventID);
+        }
     }
 
     public void decay(double beta) {

@@ -31,13 +31,9 @@ public class Entrance {
                 String input_dir = String.format("src/main/resources/%s/raw", parameter.get("logData"));
                 return env.readTextFile(input_dir + File.separator + parameter.get("logName"));
             case "files":
-//                TCFGUtil tcfgUtil = new TCFGUtil();
-//                try {
-//                    tcfgUtil.cleanShareMemory();
-//                }catch (Exception e){
-//
-//                }
-                String dir = "E:/中兴项目/实验/上电阶段数据_191219";
+                //String dir = "E:/中兴项目/实验/上电阶段数据_191219/hjm/release 5G AAU/67214_1571794768181";
+                String dir = "E:/中兴项目/实验/tecs_log_bad/tecs_log";
+
                 List filelist = new ArrayList();
                 List<File> newfilelist = getFileList(filelist,dir);
                 for (File file: newfilelist) {
@@ -103,7 +99,8 @@ public class Entrance {
                 String fileName = files[i].getName();
                 if (files[i].isDirectory()) { // 判断是文件还是文件夹
                     getFileList(filelist,files[i].getAbsolutePath()); // 获取文件绝对路径
-                } else if (fileName.startsWith("swm_vmp-")) { // 判断文件名是否以.avi结尾
+                //} else if (fileName.startsWith("swm_vmp-")) {
+                } else if (fileName.startsWith("nova-compute")) {
                     filelist.add(files[i]);
                 } else {
                     continue;

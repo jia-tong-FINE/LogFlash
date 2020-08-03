@@ -45,7 +45,7 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
         Node rootNode = parseTree.value() == null || Config.valueStates.get("templateMap") == 1? tcfgUtil.getParseTreeRegion() : parseTree.value();
         Config.valueStates.put("templateMap",0);
         String[] regex = parameterTool.get("regex").split("&");
-        int depth = 4;
+        int depth = 3;
         int maxChild = 100;
         double st = 0.5;
         LogParser parser = new LogParser(regex, parameterTool.get("logFormat"), depth, maxChild, st);
@@ -135,7 +135,7 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
         tcfgUtil = new TCFGUtil();
         //tcfgUtil.cleanShareMemory();
         tcfgUtil.initiateShareMemory();
-        tcfgUtil.initiateDatabase();
+        //tcfgUtil.initiateDatabase();
         //metricsMonitoring = new MetricsMonitoring();
         //metricsMonitoring.start();
         commandListener = new CommandListener();
