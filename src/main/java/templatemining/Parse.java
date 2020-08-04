@@ -135,7 +135,7 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
         tcfgUtil = new TCFGUtil();
         //tcfgUtil.cleanShareMemory();
         tcfgUtil.initiateShareMemory();
-        //tcfgUtil.initiateDatabase();
+        tcfgUtil.initiateDatabase();
         //metricsMonitoring = new MetricsMonitoring();
         //metricsMonitoring.start();
         commandListener = new CommandListener();

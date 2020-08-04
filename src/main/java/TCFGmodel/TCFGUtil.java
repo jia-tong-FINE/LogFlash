@@ -139,6 +139,9 @@ public class TCFGUtil {
         byte[] b = new byte[tcfgSize];
         TCFG.sm.read(2, tcfgSize, b);
         JSONObject jsonObject = JSON.parseObject(new String(b,"utf-8").trim());
+        if (jsonObject == null) {
+            return new TCFG();
+        }
         TCFG tcfg = new TCFG();
         JSONArray jsonNodesArray = jsonObject.getJSONArray("nodes");
         Iterator iter1 = jsonNodesArray.iterator();
