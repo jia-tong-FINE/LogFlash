@@ -109,8 +109,8 @@ public class TCFGUtil {
         saveTuningRegionInMemory();
         saveTemplateUpdateRegion(templateUpdateRegion);
         saveParseTreeRegion(rootNode);
-        saveTrainingFlag(0);
-        saveDetectionFlag(1);
+        saveTrainingFlag(1);
+        saveDetectionFlag(0);
     }
     public void cleanShareMemory() throws Exception {
         TransferParamMatrix tpm = new TransferParamMatrix();
