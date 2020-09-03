@@ -45,8 +45,10 @@ public class MysqlUtil {
             Connection dbConnection = DriverManager.getConnection(connectionString, parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
             String createTableSQL = "CREATE TABLE IF NOT EXISTS anomaly_log("
                     + "id INT(11) PRIMARY KEY NOT NULL AUTO_INCREMENT, "
-                    + "time VARCHAR(100) NOT NULL, "
-                    + "unixtime VARCHAR(15) NOT NULL, "
+                    + "timestart VARCHAR(100) NOT NULL, "
+                    + "timeend VARCHAR(100) NOT NULL, "
+                    + "unixtimestart VARCHAR(15) NOT NULL, "
+                    + "unixtimeend VARCHAR(15) NOT NULL, "
                     + "level VARCHAR(20), "
                     + "component VARCHAR(500), "
                     + "content TEXT, "
@@ -58,7 +60,8 @@ public class MysqlUtil {
                     + "anomalywindow VARCHAR(200), "
                     + "anomalytype VARCHAR(10), "
                     + "anomalytemplates VARCHAR(500), "
-                    + "logsequence_json TEXT"
+                    + "logsequence_json TEXT, "
+                    + "tagged BOOLEAN"
                     + ")";
             PreparedStatement preparedStatement = dbConnection.prepareStatement(createTableSQL);
             preparedStatement.executeUpdate();
@@ -178,7 +181,7 @@ public class MysqlUtil {
             conn = DriverManager.getConnection(connectionString, parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
             // 执行查询
             stmt = conn.createStatement();
-            String sql = "select id,time,unixtime,level,component,content,template,paramlist,eventid,anomalylogs,anomalyrequest,anomalywindow,anomalytype,anomalytemplates from anomaly_log";
+            String sql = "select id,timestart,timeend,unixtimestart,unixtimeend,level,component,content,template,paramlist,eventid,anomalylogs,anomalyrequest,anomalywindow,anomalytype,anomalytemplates from anomaly_log";
             ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
 
@@ -197,7 +200,9 @@ public class MysqlUtil {
                         rs.getString(11),
                         rs.getString(12),
                         rs.getString(13),
-                        rs.getString(14)
+                        rs.getString(14),
+                        rs.getString(15),
+                        rs.getString(16)
                 );
                 res.add(json);
             }
@@ -233,14 +238,16 @@ public class MysqlUtil {
             conn = DriverManager.getConnection(connectionString, parameter.get("mysqlUser"), parameter.get("mysqlPassword"));
             // 执行查询
             stmt = conn.createStatement();
-            String sql = "insert into anomaly_log (time,unixtime,level,component,content,template,paramlist,eventid,anomalylogs,anomalyrequest,anomalywindow,anomalytype,anomalytemplates, logsequence_json) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            String sql = "insert into anomaly_log (timestart,timeend,unixtimestart,unixtimeend,level,component,content,template,paramlist,eventid,anomalylogs,anomalyrequest,anomalywindow,anomalytype,anomalytemplates, logsequence_json) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             ps = conn.prepareStatement(sql);
             List anomalylogslist = anomaly.getAnomalyLogList();
             String anomalytype = anomaly.getAnomalyType();
             Tuple7 logcontent = anomaly.getAnomalyLog();
             List anomalyrequestlist = anomaly.getSuspectedAnomalyRequest();
-            String unixtime = (String) logcontent.f0;
-            String time = StamptoTime(unixtime, "HH:mm:ss:SSS");
+            String unixtimestart = (String) anomaly.getAnomalyLogList().get(0).f0;
+            String timestart = StamptoTime(unixtimestart, "HH:mm:ss:SSS");
+            String unixtimeend = (String) logcontent.f0;
+            String timeend = StamptoTime(unixtimeend, "HH:mm:ss:SSS");
             String level = (String) logcontent.f1;
             String component = (String) logcontent.f2;
             String content = (String) logcontent.f3;
@@ -264,20 +271,22 @@ public class MysqlUtil {
             }
             String anomalywindow = "";
             String logsequence_json = JSON.toJSONString(anomaly);
-            ps.setString(1, time);
-            ps.setString(2, unixtime);
-            ps.setString(3, level);
-            ps.setString(4, component);
-            ps.setString(5, content);
-            ps.setString(6, template);
-            ps.setString(7, paramlist);
-            ps.setString(8, eventid);
-            ps.setString(9, anomalylogs);
-            ps.setString(10, anomalyrequest);
-            ps.setString(11, anomalywindow);
-            ps.setString(12, anomalytype);
-            ps.setString(13, anomalyrequesttemplates);
-            ps.setString(14, logsequence_json);
+            ps.setString(1, timestart);
+            ps.setString(2, timeend);
+            ps.setString(3, unixtimestart);
+            ps.setString(4, unixtimeend);
+            ps.setString(5, level);
+            ps.setString(6, component);
+            ps.setString(7, content);
+            ps.setString(8, template);
+            ps.setString(9, paramlist);
+            ps.setString(10, eventid);
+            ps.setString(11, anomalylogs);
+            ps.setString(12, anomalyrequest);
+            ps.setString(13, anomalywindow);
+            ps.setString(14, anomalytype);
+            ps.setString(15, anomalyrequesttemplates);
+            ps.setString(16, logsequence_json);
             ps.executeUpdate();
 
             // 完成后关闭
