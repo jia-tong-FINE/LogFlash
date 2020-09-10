@@ -5,12 +5,14 @@ import java.util.List;
 
 class LogCluster implements Serializable {
     public List<String> logTemplate;
+    public String eventID;
 
     public LogCluster() {
     }
 
-    LogCluster(List<String> logTemplate) {
+    LogCluster(List<String> logTemplate, String eventID) {
         this.logTemplate = logTemplate;
+        this.eventID = eventID;
     }
 
     List<String> getLogTemplate() {
@@ -21,4 +23,11 @@ class LogCluster implements Serializable {
         this.logTemplate = logTemplate;
     }
 
+    String getEventID() {
+        return eventID;
+    }
+
+    void setEventID(String eventID) {
+        this.eventID = eventID;
+    }
 }

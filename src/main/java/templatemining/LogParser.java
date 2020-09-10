@@ -13,10 +13,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LogParser implements Serializable {
-    private String log_format;
-    private String[] rex;
-    private int depth, maxChild;
-    private double st;
+    private final String log_format;
+    private final String[] rex;
+    private final int depth;
+    private final int maxChild;
+    private final double st;
 
     LogParser(String[] rex, String log_format, int depth, int maxChild, double st) {
         this.rex = rex;
@@ -80,7 +81,10 @@ public class LogParser implements Serializable {
                 String t = m.group(header);
                 if (header.equals("Time")) {
                     try {
-                        t = TimetoStamp(t, timeFormat);
+                        if (headers.contains("Date")) {
+                            t = TimetoStamp(message.get(0) + " " + t, "yyyy-MM-dd " + timeFormat);
+                        } else
+                            t = TimetoStamp(t, timeFormat);
                     } catch (ParseException e) {
                         return new DataFrame<>(headers);
                     }
