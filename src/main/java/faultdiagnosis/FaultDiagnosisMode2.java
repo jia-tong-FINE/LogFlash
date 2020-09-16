@@ -219,6 +219,7 @@ public class FaultDiagnosisMode2 implements FaultDiagnosis{
         }
         //Sequence Anomaly
         boolean is_latency = false;
+        boolean is_single_node = true;
         if (tempListId.size() < 2) {
             return null;
         }
@@ -228,6 +229,7 @@ public class FaultDiagnosisMode2 implements FaultDiagnosis{
             long timeWeight = tcfg.getEdges().get(i).getTime_weight();
 
             if (outNodeId.equals(latestNode.f6)) {
+                is_single_node = false;
                 if (tempListId.contains(inNodeId)) {
                     if ((Long.parseLong((String)latestNode.f0)- Long.parseLong((String)tempList.get(tempListId.indexOf(inNodeId)).f0)) <= timeWeight) {
                         return null;
@@ -245,6 +247,11 @@ public class FaultDiagnosisMode2 implements FaultDiagnosis{
             }
             Anomaly anomaly = new Anomaly((String) latestNode.f6,latestNode,tempList,detectSuspiciousRequest(tcfg,tempList_l),"Latency");
             return anomaly;
+        }
+
+        //filter single node
+        if (is_single_node) {
+            return null;
         }
 
         List<Tuple7> tempList_l = new ArrayList<>();
