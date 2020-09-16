@@ -6,8 +6,6 @@ import modelconstruction.MetricsMonitoring;
 import org.apache.flink.api.common.accumulators.IntCounter;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
-import org.apache.flink.api.common.typeinfo.TypeHint;
-import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple7;
 import org.apache.flink.api.java.utils.ParameterTool;
@@ -28,7 +26,6 @@ import workflow.Config;
 
 public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, Tuple7<String, String, String, String, String, String, String>> {
     private ValueState<Node> parseTree;
-    private ValueState<Map<String, String>> templateMap;
     private final IntCounter templateNum = new IntCounter();
     private TCFGUtil tcfgUtil;
     private MetricsMonitoring metricsMonitoring;
@@ -40,10 +37,8 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
                                Context ctx,
                                Collector<Tuple7<String, String, String, String, String, String, String>> out) throws Exception {
         ParameterTool parameterTool = ParameterTool.fromMap(Config.parameter);
-        Map<String, String> map = templateMap.value() == null || Config.valueStates.get("parseTree") == 1? new HashMap<>() : templateMap.value();
+        Node rootNode = parseTree.value() == null || Config.valueStates.get("parseTree") == 1? tcfgUtil.getParseTreeRegion() : parseTree.value();
         Config.valueStates.put("parseTree",0);
-        Node rootNode = parseTree.value() == null || Config.valueStates.get("templateMap") == 1? tcfgUtil.getParseTreeRegion() : parseTree.value();
-        Config.valueStates.put("templateMap",0);
         String[] regex = parameterTool.get("regex").split("&");
         int depth = 3;
         int maxChild = 100;
@@ -54,7 +49,7 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
         List<String> logmessageL = Arrays.asList(parser.preprocess(df_log.get(0, "Content")).trim().split("[ ]"));
         LogCluster matchCluster = parser.treeSearch(rootNode, logmessageL);
         if (matchCluster == null) {
-            LogCluster newCluster = new LogCluster(logmessageL);
+            LogCluster newCluster = new LogCluster(logmessageL, parser.getHash(String.join(" ", logmessageL)));
             parser.addSeqToPrefixTree(rootNode, newCluster);
             matchCluster = newCluster;
         } else {
@@ -62,7 +57,6 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
             List<String> newTemplate = parser.getTemplate(logmessageL, matchCluster.getLogTemplate());
             if (!String.join(" ", newTemplate).equals(String.join(" ", oldTemplate))) {
                 matchCluster.setLogTemplate(newTemplate);
-                map.put(parser.getHash(String.join(" ", oldTemplate)), parser.getHash(String.join(" ", newTemplate)));
             }
         }
         parseTree.update(rootNode);
@@ -76,7 +70,7 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
         String eventTemplate = df_log.get(0, "EventTemplate");
         String parameterList = parser.get_parameter_list(df_log);
         parameterList = "\"" + parameterList + "\"";
-        String eventID = parser.getHash(eventTemplate);
+        String eventID = matchCluster.getEventID();
         Tuple7<String, String, String, String, String, String, String> tuple = new Tuple7<>(time, level, component, content, eventTemplate, parameterList, eventID);
         tuple.f2 = "1";
         out.collect(tuple);
@@ -93,20 +87,7 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
                 oo.write(m.getValue() + '\n');
             }
             oo.close();
-            if (map.size() != 0) {
-                Map<String, String> templateUpdateRegion = tcfgUtil.getTemplateUpdateRegion();
-                Iterator<Map.Entry<String, String>> it = map.entrySet().iterator();
-                while (it.hasNext()) {
-                    Map.Entry<String, String> entry = it.next();
-                    String key = entry.getKey();
-                    String value = entry.getValue();
-                    templateUpdateRegion.put(key, value);
-                    it.remove();
-                }
-                tcfgUtil.saveTemplateUpdateRegion(templateUpdateRegion);
-            }
         }
-        templateMap.update(map);
     }
 
     @Override
@@ -117,13 +98,6 @@ public class Parse extends KeyedProcessFunction<String, Tuple2<String, String>, 
                         Node.class
                 );
         parseTree = getRuntimeContext().getState(descriptor_parseTree);
-        ValueStateDescriptor<Map<String, String>> descriptor_templateMap =
-                new ValueStateDescriptor<>(
-                        "templateMap",
-                        TypeInformation.of(new TypeHint<Map<String, String>>() {
-                        })
-                );
-        templateMap = getRuntimeContext().getState(descriptor_templateMap);
         getRuntimeContext().addAccumulator("templateNum", templateNum);
         Config.parameter = new HashMap<String, String>() {{
             for (Entry<String, String> value : ParameterTool.fromPropertiesFile("src/main/resources/config.properties").toMap().entrySet()) {

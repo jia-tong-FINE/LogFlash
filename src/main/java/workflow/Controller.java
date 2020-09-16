@@ -66,7 +66,6 @@ public class Controller {
          Config.valueStates.put("transferParamMatrix", 1);
          Config.valueStates.put("tcfgValueState", 1);
          Config.valueStates.put("parseTree", 1);
-         Config.valueStates.put("templateMap", 1);
          return 0;
      }
      private int enableHumanFeedback() {

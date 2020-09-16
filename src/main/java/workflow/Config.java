@@ -12,6 +12,5 @@ public class Config {
         valueStates.put("transferParamMatrix", 0);
         valueStates.put("tcfgValueState", 0);
         valueStates.put("parseTree", 0);
-        valueStates.put("templateMap", 0);
     }
 }
