@@ -30,7 +30,7 @@ public class IndenpendencyFilter {
         List<Tuple7> filteredLogList = new ArrayList<>();
         Tuple7 latestLog = tempList.get(tempList.size()-1);
         Tuple7 tempLog = tempList.get(tempList.size()-1);
-        Map<String, Map<String, Double>> paramMatrix = transferParamMatrix.getParamMatrix();
+        Map<String, Map<String,MatrixTriple>> paramMatrix = transferParamMatrix.getParamMatrix();
         List<Tuple7> leftList = new ArrayList<>();
         for (int i = 0; i <= tempList.size()-2 ; i++) {
             leftList.add(tempList.get(i));
@@ -42,15 +42,10 @@ public class IndenpendencyFilter {
             double max_transition_prob = 0;
             int max_log_id = leftList.size();
             for (int i = leftList.size()-1; i >=0 ; i--) {
-//                System.out.println("++++++++++++++++++");
-//                System.out.println(leftList.get(i).f6);
-//                System.out.println(tempLog.f6);
-//                System.out.println(paramMatrix.get(leftList.get(i).f6).get(tempLog.f6));
-//                System.out.println("++++++++++++++++++");
                 double alphaij = 0;
                 if (paramMatrix.containsKey(leftList.get(i).f6)) {
                     if (paramMatrix.get(leftList.get(i).f6).containsKey(tempLog.f6)) {
-                        alphaij = paramMatrix.get(leftList.get(i).f6).get(tempLog.f6);
+                        alphaij = paramMatrix.get(leftList.get(i).f6).get(tempLog.f6).getValue();
                     }
                 }
                 double prob_alphaij = calProbability(Double.valueOf((String)tempLog.f0), Double.valueOf((String)leftList.get(i).f0),alphaij,timeWindow,delta);
@@ -65,7 +60,7 @@ public class IndenpendencyFilter {
             }
 
             infection_prob = infection_prob * max_transition_prob;
-            double latest_alphaij = paramMatrix.get(leftList.get(max_log_id).f6).get(latestLog.f6);
+            double latest_alphaij = paramMatrix.get(leftList.get(max_log_id).f6).get(latestLog.f6).getValue();
             double latest_prob_alphaij = calProbability(Double.valueOf((String)latestLog.f0), Double.valueOf((String)leftList.get(max_log_id).f0),latest_alphaij,timeWindow,delta);
             if (infection_prob >= latest_prob_alphaij) {
                 if (!tempLog.equals(latestLog)) {

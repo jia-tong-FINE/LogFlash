@@ -1,5 +1,6 @@
 package TCFGmodel;
 
+import com.alibaba.fastjson.JSONObject;
 import modelconstruction.TransferParamMatrix;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
@@ -10,6 +11,10 @@ import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
 import workflow.Config;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.util.ArrayList;
 import java.util.List;
 import static humanfeedback.SuspiciousRegionMonitor.tuningRegion;
 
@@ -29,6 +34,7 @@ public class TCFGConstructor {
             }
 
             if (counter.modResult(parameterTool.getInt("TCFGWriteInterval")) == 0) {
+                //updat TCFG
                 TCFGUtil tcfgUtil = new TCFGUtil();
                 TransferParamMatrix transferParamMatrix = tcfgUtil.getMatrixFromMemory();
                 TCFG tcfg = new TCFG();
@@ -46,6 +52,21 @@ public class TCFGConstructor {
                 tcfg.setEdges(edges);
                 tcfgUtil.saveTCFGInMemory(tcfg);
                 counterValueState.update(counter);
+
+                //store in database
+                List list = new ArrayList<>();
+                list.add(transferParamMatrix.getEventInfo());
+                list.add(transferParamMatrix.getParamMatrix());
+                String paramMatrixJSON = JSONObject.toJSONString(list);
+                File file = new File("E:/中兴项目/实验/paramMatrix.json");
+                if(!file.exists()){
+                    file.createNewFile();
+                }
+                FileWriter fileWritter = new FileWriter(file,false);
+                fileWritter.write(paramMatrixJSON
+                );
+//                MysqlUtil mysqlUtil = new MysqlUtil();
+//                mysqlUtil.updateTCFG(paramMatrixJSON);
             }
         }
 

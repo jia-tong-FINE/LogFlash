@@ -32,7 +32,7 @@ public class Entrance {
                 return env.readTextFile(input_dir + File.separator + parameter.get("logName"));
             case "files":
                 //String dir = "E:/中兴项目/实验/上电阶段数据_191219/hjm/release 5G AAU/67214_1571794768181";
-                String dir = "E:/中兴项目/实验/tecs_log_bad/tecs_log";
+                String dir = "E:/中兴项目/实验/tecs_log_good/tecs_log";
 
                 List filelist = new ArrayList();
                 List<File> newfilelist = getFileList(filelist,dir);

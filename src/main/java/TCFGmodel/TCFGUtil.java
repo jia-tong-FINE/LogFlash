@@ -56,16 +56,6 @@ public class TCFGUtil {
         return tempList_reverse;
     }
 
-    public static List<Tuple7> deleteExpiredTemplate(List<Tuple7> list,TransferParamMatrix transferParamMatrix){
-        List<Tuple7> tempList = list;
-        for (int i = tempList.size()- 2; i >=0; i--) {
-            if(!transferParamMatrix.getEventIDList().contains(tempList.get(i).f6)) {
-                tempList.remove(i);
-            }
-        }
-        return tempList;
-    }
-
 
     public class counter {
         int count;

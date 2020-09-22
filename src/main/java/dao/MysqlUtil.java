@@ -287,7 +287,7 @@ public class MysqlUtil {
             ps.setString(14, anomalytype);
             ps.setString(15, anomalyrequesttemplates);
             ps.setString(16, logsequence_json);
-            ps.executeUpdate();
+            //ps.executeUpdate();
 
             // 完成后关闭
             stmt.close();

@@ -60,8 +60,8 @@ public class SuspiciousRegionMonitor {
                     TCFGUtil tcfgUtil = new TCFGUtil();
                     TCFG tcfg = tcfgUtil.getTCFGFromMemory();
                     long suspiciousTimeForSequenceAnomaly = parameterTool.getLong("suspiciousTimeForSequenceAnomaly");
-                    long suspiciousTimeForLatencyAnomaly = parameterTool.getLong("suspiciousTimeForLatencyAnomaly");
-                    long suspiciousTimeForRedundancyAnomaly = parameterTool.getLong("suspiciousTimeForRedundancyAnomaly");
+                    //long suspiciousTimeForLatencyAnomaly = parameterTool.getLong("suspiciousTimeForLatencyAnomaly");
+                    //long suspiciousTimeForRedundancyAnomaly = parameterTool.getLong("suspiciousTimeForRedundancyAnomaly");
                     Iterator<Tuple7<String, String, String, String, String, String, String>> iter = input.iterator();
                     Tuple7 in = iter.next();
                     long inTime = Long.parseLong((String) in.f0);
@@ -83,29 +83,29 @@ public class SuspiciousRegionMonitor {
                         }
                     }
                     //handle latency anomaly
-                    while (suspiciousRegion.latencyAnomalyQueue.size() > 0) {
-                        Anomaly anomaly = suspiciousRegion.latencyAnomalyQueue.element();
-                        long anomalyTime = Long.parseLong((String) anomaly.getAnomalyLog().f0);
-                        //beyond suspicious time window
-                        if (inTime - anomalyTime > suspiciousTimeForLatencyAnomaly) {
-                            tuningRegion.addAnomalyToQueue(anomaly);
-                            suspiciousRegion.latencyAnomalyQueue.poll();
-                        } else {
-                            break;
-                        }
-                    }
-                    //handle redundancy anomaly
-                    while (suspiciousRegion.redundancyAnomalyQueue.size() > 0) {
-                        Anomaly anomaly = suspiciousRegion.redundancyAnomalyQueue.element();
-                        long anomalyTime = Long.parseLong((String) anomaly.getAnomalyLog().f0);
-                        //beyond suspicious time window
-                        if (inTime - anomalyTime > suspiciousTimeForRedundancyAnomaly) {
-                            tuningRegion.addAnomalyToQueue(anomaly);
-                            suspiciousRegion.redundancyAnomalyQueue.poll();
-                        } else {
-                            break;
-                        }
-                    }
+//                    while (suspiciousRegion.latencyAnomalyQueue.size() > 0) {
+//                        Anomaly anomaly = suspiciousRegion.latencyAnomalyQueue.element();
+//                        long anomalyTime = Long.parseLong((String) anomaly.getAnomalyLog().f0);
+//                        //beyond suspicious time window
+//                        if (inTime - anomalyTime > suspiciousTimeForLatencyAnomaly) {
+//                            //tuningRegion.addAnomalyToQueue(anomaly);
+//                            suspiciousRegion.latencyAnomalyQueue.poll();
+//                        } else {
+//                            break;
+//                        }
+//                    }
+//                    //handle redundancy anomaly
+//                    while (suspiciousRegion.redundancyAnomalyQueue.size() > 0) {
+//                        Anomaly anomaly = suspiciousRegion.redundancyAnomalyQueue.element();
+//                        long anomalyTime = Long.parseLong((String) anomaly.getAnomalyLog().f0);
+//                        //beyond suspicious time window
+//                        if (inTime - anomalyTime > suspiciousTimeForRedundancyAnomaly) {
+//                            //tuningRegion.addAnomalyToQueue(anomaly);
+//                            suspiciousRegion.redundancyAnomalyQueue.poll();
+//                        } else {
+//                            break;
+//                        }
+//                    }
                 }
                 TCFGUtil tcfgUtil = new TCFGUtil();
                 tcfgUtil.saveTuningRegionInMemory();

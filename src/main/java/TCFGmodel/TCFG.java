@@ -1,5 +1,6 @@
 package TCFGmodel;
 
+import modelconstruction.MatrixTriple;
 import modelconstruction.TransferParamMatrix;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,23 +64,16 @@ public class TCFG {
     }
     public void paramMatrix2TCFG (TransferParamMatrix transferParamMatrix, long delta) {
 
-        Map<String, Map<String, Double>> paramMatrix = transferParamMatrix.getParamMatrix();
-        Map<String, Map<String, Long>> timeMatrix = transferParamMatrix.getTimeMatrix();
-
-        TCFGUtil tcfgUtil = new TCFGUtil();
+        Map<String, Map<String, MatrixTriple>> paramMatrix = transferParamMatrix.getParamMatrix();
+        List<String> eventIDList = transferParamMatrix.getEventIDList();
+        for (String eventID: eventIDList) {
+            TCFG.Node node = new TCFG.Node();
+            node.node_id = eventID;
+            nodes.add(node);
+        }
         for (String key1: paramMatrix.keySet()) {
-            TCFG.Node in_node = new TCFG.Node();
-            in_node.node_id = key1;
-            if (!ifInNodeList(in_node)) {
-                nodes.add(in_node);
-            }
             for (String key2: paramMatrix.get(key1).keySet()) {
-                TCFG.Node out_node = new TCFG.Node();
-                out_node.node_id = key2;
-                if (!ifInNodeList(out_node)) {
-                    nodes.add(out_node);
-                }
-                double alphaji = paramMatrix.get(key1).get(key2);
+                double alphaji = paramMatrix.get(key1).get(key2).getValue();
                 //double transitionProb = tcfgUtil.calDefinitIntegral(delta, 2*delta, 100, alphaji, delta);
                 if (alphaji > 0.1) {
                     TCFG.Node in_node_edge = new TCFG.Node();
@@ -89,7 +83,7 @@ public class TCFG {
                     TCFG.Edge edge = new TCFG.Edge();
                     edge.in_node = in_node_edge;
                     edge.out_node = out_node_edge;
-                    edge.time_weight = timeMatrix.get(key1).get(key2);
+                    edge.time_weight = paramMatrix.get(key1).get(key2).getTimeWeight();
                     edges.add(edge);
                 }
             }
